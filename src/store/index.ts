@@ -9,3 +9,5 @@ export const useUIStore = create<UIState>((set) => ({
   hasOnboarded: false,
   setOnboarded: (value) => set({ hasOnboarded: value }),
 }));
+
+export * from './wardrobe';
