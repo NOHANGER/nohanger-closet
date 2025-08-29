@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Platform, StyleSheet } from "react-native";
+import { Platform, StyleSheet, View, ActivityIndicator } from "react-native";
 import { MaterialIcons, MaterialCommunityIcons, FontAwesome6 } from "@expo/vector-icons";
 import ClothingManagementScreen from "../screens/ClothingManagementScreen";
 import ClothingDetailScreen from "../screens/ClothingDetailScreen";
@@ -18,13 +18,17 @@ import {
   ClosetStackParamList,
   OutfitStackParamList,
   TryOnStackParamList,
+  AuthStackParamList,
 } from "../types/navigation";
+import LoginScreen from "../screens/LoginScreen";
+import { AuthContext } from "../contexts/AuthContext";
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const ClosetStack = createNativeStackNavigator<ClosetStackParamList>();
 const OutfitStack = createNativeStackNavigator<OutfitStackParamList>();
 const TryOnStack = createNativeStackNavigator<TryOnStackParamList>();
+const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 
 const ProfileScreen = () => <></>;
 
@@ -96,15 +100,27 @@ const MainTabNavigator = () => (
 
 // Root Navigator
 const AppNavigator = () => {
+  const auth = useContext(AuthContext);
+
   return (
     <NavigationContainer>
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        <RootStack.Screen name="MainTabs" component={MainTabNavigator} />
-        <RootStack.Group screenOptions={{ presentation: "modal" }}>
-          <RootStack.Screen name="ClothingDetailModal" component={ClothingDetailScreen} />
-          <RootStack.Screen name="OutfitDetailModal" component={OutfitDetailScreen} />
-        </RootStack.Group>
-      </RootStack.Navigator>
+      {auth?.isLoading ? (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator />
+        </View>
+      ) : auth?.isAuthenticated ? (
+        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+          <RootStack.Screen name="MainTabs" component={MainTabNavigator} />
+          <RootStack.Group screenOptions={{ presentation: "modal" }}>
+            <RootStack.Screen name="ClothingDetailModal" component={ClothingDetailScreen} />
+            <RootStack.Screen name="OutfitDetailModal" component={OutfitDetailScreen} />
+          </RootStack.Group>
+        </RootStack.Navigator>
+      ) : (
+        <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+          <AuthStack.Screen name="Login" component={LoginScreen} />
+        </AuthStack.Navigator>
+      )}
     </NavigationContainer>
   );
 };

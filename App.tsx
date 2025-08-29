@@ -1,3 +1,4 @@
+import "react-native-gesture-handler";
 import "react-native-get-random-values";
 import { useFonts } from "expo-font";
 import {
@@ -10,6 +11,7 @@ import AppNavigator from "./src/navigation";
 import { ClothingProvider } from "./src/contexts/ClothingContext";
 import { VirtualTryOnProvider } from "./src/contexts/VirtualTryOnContext";
 import { OutfitProvider } from "./src/contexts/OutfitContext";
+import { AuthProvider } from "./src/contexts/AuthContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
 
@@ -27,13 +29,15 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <ClothingProvider>
-        <OutfitProvider>
-          <VirtualTryOnProvider>
-            <AppNavigator />
-          </VirtualTryOnProvider>
-        </OutfitProvider>
-      </ClothingProvider>
+      <AuthProvider>
+        <ClothingProvider>
+          <OutfitProvider>
+            <VirtualTryOnProvider>
+              <AppNavigator />
+            </VirtualTryOnProvider>
+          </OutfitProvider>
+        </ClothingProvider>
+      </AuthProvider>
     </GestureHandlerRootView>
   );
 }

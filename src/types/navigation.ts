@@ -31,6 +31,10 @@ export type TryOnStackParamList = {
   VirtualTryOn: undefined;
 };
 
+export type AuthStackParamList = {
+  Login: undefined;
+};
+
 // Screen Props Types
 export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<RootStackParamList, T>;
 
