@@ -10,6 +10,7 @@ import OutfitManagementScreen from "../screens/OutfitManagementScreen";
 import OutfitCanvasScreen from "../screens/OutfitCanvasScreen";
 import OutfitDetailScreen from "../screens/OutfitDetailScreen";
 import VirtualTryOnScreen from "../screens/VirtualTryOnScreen";
+import CommunityScreen from "../screens/CommunityScreen";
 import { colors } from "../styles/colors";
 import { typography } from "../styles/globalStyles";
 import {
@@ -66,6 +67,13 @@ const MainTabNavigator = () => (
       tabBarIconStyle: styles.tabBarIcon,
     }}
   >
+    <Tab.Screen
+      name="Community"
+      component={CommunityScreen}
+      options={{
+        tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="account-group" size={size} color={color} />,
+      }}
+    />
     <Tab.Screen
       name="Closet"
       component={ClosetStackNavigator}

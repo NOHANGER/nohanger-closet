@@ -10,6 +10,7 @@ export type RootStackParamList = {
 };
 
 export type MainTabParamList = {
+  Community: undefined;
   Closet: NavigatorScreenParams<ClosetStackParamList>;
   Outfits: NavigatorScreenParams<OutfitStackParamList>;
   TryOn: NavigatorScreenParams<TryOnStackParamList>;
