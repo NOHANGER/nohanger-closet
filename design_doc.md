@@ -1,8 +1,8 @@
-# AI Closet App Design Doc
+# Nohanger Closet App Design Doc
 
 ## 1. Introduction
 
-This design document outlines the implementation plan for the AI Closet Mobile App, a React Native application built with Expo to support both iOS and Android devices. The app aims to help users manage their clothes, create stylish outfits, and virtually try on clothes using AI-powered features like automatic clothing categorization, background removal, and virtual try-on capabilities.
+This design document outlines the implementation plan for the Nohanger Closet Mobile App, a React Native application built with Expo to support both iOS and Android devices. The app aims to help users manage their clothes, create stylish outfits, and virtually try on clothes using AI-powered features like automatic clothing categorization, background removal, and virtual try-on capabilities.
 
 Target Users:
 

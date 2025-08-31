@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ai-closet",
-    "slug": "ai-closet",
+    "name": "nohanger-closet",
+    "slug": "nohanger-closet",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

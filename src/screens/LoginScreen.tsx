@@ -28,7 +28,7 @@ const LoginScreen: React.FC = () => {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.container}>
       <View style={styles.card}>
-        <Text style={styles.title}>Welcome to AI Closet</Text>
+        <Text style={styles.title}>Welcome to Nohanger Closet</Text>
         <Text style={styles.subtitle}>Sign in to continue</Text>
 
         <TextInput

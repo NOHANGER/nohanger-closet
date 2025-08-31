@@ -1,9 +1,9 @@
 <h2 align="center">
-AI Closet
+Nohanger Closet
 </h2>
 
 > <div align="center">
->   <sub>Thank you for checking out AI Closet! If you find it useful or interesting, consider giving this repository a <strong>star</strong> ⭐. It helps others discover the project too.</sub>
+>   <sub>Thank you for checking out Nohanger Closet! If you find it useful or interesting, consider giving this repository a <strong>star</strong> ⭐. It helps others discover the project too.</sub>
 > </div>
 
 <div align="center">
@@ -11,7 +11,7 @@ AI Closet
 </div>
 
 
-**AI Closet** is a mobile application that brings an AI-powered approach to closet management and styling. Whether you want to keep track of every piece in your closet, or seek an easy way to visualize outfit ideas, the AI Closet helps you:
+**Nohanger Closet** is a mobile application that brings an AI-powered approach to closet management and styling. Whether you want to keep track of every piece in your closet, or seek an easy way to visualize outfit ideas, the Nohanger Closet helps you:
 
 - Digitally store and manage all your clothing.  
 - Experiment with outfit combinations on a freeform canvas and save your favorite looks for future inspiration.  
@@ -166,7 +166,7 @@ Refer to the [design_doc](/design_doc.md) for more details on the current archit
 ### Productization Considerations
 
 <div>
-  <p>One key differentiator of AI Closet is the <strong>integrated virtual try-on plus wardrobe management</strong> — an all-in-one approach compared to many closet-only or try-on-only apps.</p>
+  <p>One key differentiator of Nohanger Closet is the <strong>integrated virtual try-on plus wardrobe management</strong> — an all-in-one approach compared to many closet-only or try-on-only apps.</p>
 </div>
 
 #### Cost Estimation
@@ -211,5 +211,5 @@ This project is licensed under the **MIT License**.
 
 <br />
 <div align="center">
-  <sub>Thank you for reading! If you find AI Closet useful, consider giving this repository a <strong>star</strong> ⭐.</sub>
+  <sub>Thank you for reading! If you find Nohanger Closet useful, consider giving this repository a <strong>star</strong> ⭐.</sub>
 </div>
