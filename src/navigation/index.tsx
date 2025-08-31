@@ -22,6 +22,7 @@ import {
   AuthStackParamList,
 } from "../types/navigation";
 import LoginScreen from "../screens/LoginScreen";
+import WardrobeScreen from "../screens/WardrobeScreen";
 import { AuthContext } from "../contexts/AuthContext";
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -98,9 +99,12 @@ const MainTabNavigator = () => (
     />
     <Tab.Screen
       name="Profile"
-      component={ProfileScreen}
+      component={WardrobeScreen}
       options={{
-        tabBarIcon: ({ color, size }) => <MaterialIcons name="person" size={size} color={color} />,
+        tabBarLabel: "Wardrobe",
+        tabBarIcon: ({ color, size }) => (
+          <MaterialCommunityIcons name="wardrobe-outline" size={size} color={color} />
+        ),
       }}
     />
   </Tab.Navigator>
