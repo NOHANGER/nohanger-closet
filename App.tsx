@@ -1,4 +1,5 @@
 import "react-native-gesture-handler";
+import "react-native-reanimated";
 import "react-native-get-random-values";
 import { useFonts } from "expo-font";
 import {
@@ -13,7 +14,7 @@ import { VirtualTryOnProvider } from "./src/contexts/VirtualTryOnContext";
 import { OutfitProvider } from "./src/contexts/OutfitContext";
 import { AuthProvider } from "./src/contexts/AuthContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { StyleSheet } from "react-native";
+import { StyleSheet, ActivityIndicator, View } from "react-native";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -24,7 +25,13 @@ export default function App() {
   });
 
   if (!fontsLoaded) {
-    return null;
+    return (
+      <GestureHandlerRootView style={styles.container}>
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" />
+        </View>
+      </GestureHandlerRootView>
+    );
   }
 
   return (
@@ -45,5 +52,10 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loader: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
