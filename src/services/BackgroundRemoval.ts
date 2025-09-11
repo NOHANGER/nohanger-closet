@@ -1,10 +1,29 @@
 import * as FileSystem from "expo-file-system";
+import { Platform } from "react-native";
+import { removeBackgroundNative } from "../native/BackgroundRemoval";
 
 const FAL_API_KEY = process.env.EXPO_PUBLIC_FAL_KEY;
 const API_ENDPOINT = "https://queue.fal.run/fal-ai/birefnet/v2";
 
+// If API key is not present, we fall back to a no-op mode
+const BG_REMOVAL_DISABLED = !FAL_API_KEY || process.env.EXPO_PUBLIC_BG_REMOVAL === "off";
+
 export const removeBackground = async (imageUri: string): Promise<string> => {
   console.debug("[BG Removal Service] Request Initiated Time:", new Date().toISOString());
+  // Prefer on-device iOS path if available
+  if (Platform.OS === 'ios') {
+    try {
+      const nativeOut = await removeBackgroundNative(imageUri);
+      console.debug("[BG Removal Service] Used iOS native Vision segmentation.");
+      if (nativeOut) return nativeOut;
+    } catch (e) {
+      console.warn("[BG Removal Service] iOS native removal unavailable. Falling back.", e);
+    }
+  }
+  if (BG_REMOVAL_DISABLED) {
+    console.warn("[BG Removal Service] No API key configured. Returning original image URI.");
+    return imageUri;
+  }
   try {
     // Read the image file and convert it to Base64
     const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding: FileSystem.EncodingType.Base64 });
@@ -35,6 +54,11 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Error submitting background removal request:", errorText);
+      // Graceful fallback for auth errors or private app access
+      if (response.status === 401 || response.status === 403 || /Authentication is required/i.test(errorText)) {
+        console.warn("[BG Removal Service] Auth required or denied. Falling back to original image.");
+        return imageUri;
+      }
       throw new Error("Failed to submit background removal request");
     }
 
@@ -61,6 +85,10 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
       if (!statusResponse.ok) {
         const errorText = await statusResponse.text();
         console.error("Error checking status:", errorText);
+        if (statusResponse.status === 401 || statusResponse.status === 403 || /Authentication is required/i.test(errorText)) {
+          console.warn("[BG Removal Service] Auth error during status check. Falling back to original image.");
+          return imageUri;
+        }
         throw new Error("Failed to check status");
       }
 
@@ -84,6 +112,10 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
     if (!resultResponse.ok) {
       const errorText = await resultResponse.text();
       console.error("Error getting result:", errorText);
+      if (resultResponse.status === 401 || resultResponse.status === 403 || /Authentication is required/i.test(errorText)) {
+        console.warn("[BG Removal Service] Auth error fetching result. Falling back to original image.");
+        return imageUri;
+      }
       throw new Error("Failed to get result");
     }
 
@@ -109,6 +141,7 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
     }
   } catch (error) {
     console.error("Error in removeBackground:", error);
-    throw error;
+    // As a last resort, keep the original image so the flow continues
+    return imageUri;
   }
 };

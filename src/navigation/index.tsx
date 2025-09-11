@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Platform, StyleSheet, View, ActivityIndicator } from "react-native";
@@ -11,6 +11,7 @@ import OutfitCanvasScreen from "../screens/OutfitCanvasScreen";
 import OutfitDetailScreen from "../screens/OutfitDetailScreen";
 import VirtualTryOnScreen from "../screens/VirtualTryOnScreen";
 import CommunityScreen from "../screens/CommunityScreen";
+import PlannerScreen from "../screens/PlannerScreen";
 import { colors } from "../styles/colors";
 import { typography } from "../styles/globalStyles";
 import {
@@ -20,6 +21,7 @@ import {
   OutfitStackParamList,
   TryOnStackParamList,
   AuthStackParamList,
+  CommunityStackParamList,
 } from "../types/navigation";
 import LoginScreen from "../screens/LoginScreen";
 import WardrobeScreen from "../screens/WardrobeScreen";
@@ -31,6 +33,7 @@ const ClosetStack = createNativeStackNavigator<ClosetStackParamList>();
 const OutfitStack = createNativeStackNavigator<OutfitStackParamList>();
 const TryOnStack = createNativeStackNavigator<TryOnStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
+const CommunityStack = createNativeStackNavigator<CommunityStackParamList>();
 
 const ProfileScreen = () => <></>;
 
@@ -56,6 +59,20 @@ const TryOnStackNavigator = () => (
   </TryOnStack.Navigator>
 );
 
+const CommunityStackNavigator = () => (
+  <CommunityStack.Navigator screenOptions={{ headerShown: false }}>
+    <CommunityStack.Screen name="CommunityHome" component={CommunityScreen} />
+    <CommunityStack.Screen name="CommunityUpload" component={require("../screens/community/UploadScreen").default} />
+    <CommunityStack.Screen name="CommunityCreate" component={require("../screens/community/CreateScreen").default} />
+    <CommunityStack.Screen name="CommunityPlan" component={require("../screens/community/PlanScreen").default} />
+    <CommunityStack.Screen name="CommunityReview" component={require("../screens/community/ReviewScreen").default} />
+    <CommunityStack.Screen name="CommunityRead" component={require("../screens/community/ReadScreen").default} />
+    <CommunityStack.Screen name="CommunitySettings" component={require("../screens/community/SettingsScreen").default} />
+    <CommunityStack.Screen name="CommunityConnections" component={require("../screens/community/ConnectionsScreen").default} />
+    <CommunityStack.Screen name="CommunityEditProfile" component={require("../screens/community/EditProfileScreen").default} />
+  </CommunityStack.Navigator>
+);
+
 // Main Tab Navigator
 const MainTabNavigator = () => (
   <Tab.Navigator
@@ -64,37 +81,51 @@ const MainTabNavigator = () => (
       tabBarStyle: styles.tabBar,
       tabBarActiveTintColor: colors.text_primary,
       tabBarInactiveTintColor: colors.text_gray,
-      tabBarLabelStyle: styles.tabBarLabel,
+      tabBarShowLabel: false,
       tabBarIconStyle: styles.tabBarIcon,
+      // Exact color match across all tabs
+      tabBarBackground: () => (
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: colors.screen_background,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: colors.border_gray_light,
+          }}
+        />
+      ),
+      tabBarHideOnKeyboard: true,
+      // Ensure scenes behind the floating tab bar match background
+      sceneContainerStyle: { backgroundColor: colors.screen_background },
     }}
   >
     <Tab.Screen
       name="Community"
-      component={CommunityScreen}
+      component={CommunityStackNavigator}
       options={{
-        tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="account-group" size={size} color={color} />,
-      }}
-    />
-    <Tab.Screen
-      name="Closet"
-      component={ClosetStackNavigator}
-      options={{
-        tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="wardrobe" size={size} color={color} />,
+        tabBarIcon: ({ color, size }) => (
+          <MaterialCommunityIcons name="earth" size={size} color={color} />
+        ),
       }}
     />
     <Tab.Screen
       name="Outfits"
       component={OutfitStackNavigator}
       options={{
-        tabBarIcon: ({ color, size }) => <MaterialIcons name="style" size={size} color={color} />,
+        tabBarLabel: "Styling",
+        tabBarIcon: ({ color, size }) => (
+          <FontAwesome6 name="wand-magic-sparkles" size={20} color={color} />
+        ),
       }}
     />
     <Tab.Screen
-      name="TryOn"
-      component={TryOnStackNavigator}
+      name="Planner"
+      component={PlannerScreen}
       options={{
-        tabBarLabel: "Try-On",
-        tabBarIcon: ({ color, size }) => <FontAwesome6 name="wand-magic-sparkles" size={20} color={color} />,
+        tabBarIcon: ({ color, size }) => (
+          <MaterialCommunityIcons name="calendar-blank-outline" size={size} color={color} />
+        ),
       }}
     />
     <Tab.Screen
@@ -114,8 +145,18 @@ const MainTabNavigator = () => (
 const AppNavigator = () => {
   const auth = useContext(AuthContext);
 
+  // Ensure navigation background matches app background
+  const navigationTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: colors.screen_background,
+      card: colors.screen_background,
+    },
+  } as const;
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       {auth?.isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator />
@@ -139,13 +180,23 @@ const AppNavigator = () => {
 
 const styles = StyleSheet.create({
   tabBar: {
-    height: Platform.OS === "ios" ? 90 : 60,
-    paddingBottom: Platform.OS === "ios" ? 32 : 10,
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 10,
+    height: Platform.OS === "ios" ? 78 : 64,
+    paddingBottom: Platform.OS === "ios" ? 22 : 10,
     paddingTop: 10,
-    backgroundColor: colors.screen_background,
-    borderTopColor: colors.divider_light,
-    borderTopWidth: 1,
+    // Use transparent here since we draw an explicit background via tabBarBackground
+    backgroundColor: 'transparent',
+    borderTopColor: 'transparent',
+    borderTopWidth: 0,
     elevation: 0,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
   },
   tabBarLabel: {
     fontFamily: typography.medium,

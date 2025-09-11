@@ -1,6 +1,7 @@
 export const colors = {
   primary_yellow: "#F4C753",
   light_yellow: "#FFE9B1",
+  accent_lime: "#D6FF3D",
   text_primary: "#1E1E1E",
   text_gray: "#625845",
   text_gray_light: "#A39E9E",

@@ -8,6 +8,9 @@ const LoginScreen: React.FC = () => {
   const auth = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -17,7 +20,13 @@ const LoginScreen: React.FC = () => {
     setError(null);
     setSubmitting(true);
     try {
-      await auth.login(email.trim(), password);
+      if (isSignUp) {
+        if (password.length < 6) throw new Error("Password must be at least 6 characters");
+        if (password !== confirmPassword) throw new Error("Passwords do not match");
+        await auth.signup(email.trim(), password, { displayName });
+      } else {
+        await auth.login(email.trim(), password);
+      }
     } catch (e: any) {
       setError(e?.message ?? "Login failed");
     } finally {
@@ -29,7 +38,14 @@ const LoginScreen: React.FC = () => {
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.title}>Welcome to Nohanger Closet</Text>
-        <Text style={styles.subtitle}>Sign in to continue</Text>
+        <View style={styles.segment}>
+          <TouchableOpacity style={[styles.segmentBtn, !isSignUp && styles.segmentBtnActive]} onPress={() => setIsSignUp(false)}>
+            <Text style={[styles.segmentText, !isSignUp && styles.segmentTextActive]}>Sign In</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.segmentBtn, isSignUp && styles.segmentBtnActive]} onPress={() => setIsSignUp(true)}>
+            <Text style={[styles.segmentText, isSignUp && styles.segmentTextActive]}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
 
         <TextInput
           style={styles.input}
@@ -41,6 +57,15 @@ const LoginScreen: React.FC = () => {
           keyboardType="email-address"
           textContentType="username"
         />
+        {isSignUp && (
+          <TextInput
+            style={styles.input}
+            placeholder="Display name (optional)"
+            placeholderTextColor={colors.text_gray_light}
+            value={displayName}
+            onChangeText={setDisplayName}
+          />
+        )}
         <TextInput
           style={styles.input}
           placeholder="Password"
@@ -50,14 +75,26 @@ const LoginScreen: React.FC = () => {
           secureTextEntry
           textContentType="password"
         />
+        {isSignUp && (
+          <TextInput
+            style={styles.input}
+            placeholder="Confirm Password"
+            placeholderTextColor={colors.text_gray_light}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+            textContentType="password"
+          />
+        )}
 
         {!!error && <Text style={styles.error}>{error}</Text>}
 
         <TouchableOpacity style={styles.button} onPress={onSubmit} disabled={submitting}>
-          {submitting ? <ActivityIndicator color="#000" /> : <Text style={styles.buttonText}>Continue</Text>}
+          {submitting ? <ActivityIndicator color="#000" /> : <Text style={styles.buttonText}>{isSignUp ? "Create Account" : "Continue"}</Text>}
         </TouchableOpacity>
-
-        <Text style={styles.hint}>This is a local demo login. Hook up your real auth later.</Text>
+        <Text style={styles.hint}>
+          Demo only: accounts are stored locally on this device. Use a backend to support real multi-device accounts.
+        </Text>
       </View>
     </KeyboardAvoidingView>
   );
@@ -86,6 +123,19 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: colors.text_primary,
   },
+  segment: {
+    flexDirection: "row",
+    marginTop: 12,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: colors.border_gray,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  segmentBtn: { flex: 1, alignItems: "center", paddingVertical: 10, backgroundColor: "#fff" },
+  segmentBtnActive: { backgroundColor: colors.light_yellow },
+  segmentText: { fontFamily: typography.medium, color: colors.text_gray },
+  segmentTextActive: { color: colors.text_primary },
   subtitle: {
     marginTop: 6,
     fontFamily: typography.regular,

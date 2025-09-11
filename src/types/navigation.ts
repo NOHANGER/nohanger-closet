@@ -10,10 +10,9 @@ export type RootStackParamList = {
 };
 
 export type MainTabParamList = {
-  Community: undefined;
-  Closet: NavigatorScreenParams<ClosetStackParamList>;
+  Community: NavigatorScreenParams<CommunityStackParamList>;
   Outfits: NavigatorScreenParams<OutfitStackParamList>;
-  TryOn: NavigatorScreenParams<TryOnStackParamList>;
+  Planner: undefined;
   Profile: undefined;
 };
 
@@ -36,6 +35,18 @@ export type AuthStackParamList = {
   Login: undefined;
 };
 
+export type CommunityStackParamList = {
+  CommunityHome: undefined;
+  CommunityUpload: undefined;
+  CommunityCreate: undefined;
+  CommunityPlan: undefined;
+  CommunityReview: undefined;
+  CommunityRead: undefined;
+  CommunitySettings: undefined;
+  CommunityConnections: { tab?: 'suggested' | 'following' | 'followers' } | undefined;
+  CommunityEditProfile: undefined;
+};
+
 // Screen Props Types
 export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<RootStackParamList, T>;
 
@@ -56,6 +67,11 @@ export type OutfitStackScreenProps<T extends keyof OutfitStackParamList> = Compo
 
 export type TryOnStackScreenProps<T extends keyof TryOnStackParamList> = CompositeScreenProps<
   NativeStackScreenProps<TryOnStackParamList, T>,
+  CompositeScreenProps<BottomTabScreenProps<MainTabParamList>, NativeStackScreenProps<RootStackParamList>>
+>;
+
+export type CommunityStackScreenProps<T extends keyof CommunityStackParamList> = CompositeScreenProps<
+  NativeStackScreenProps<CommunityStackParamList, T>,
   CompositeScreenProps<BottomTabScreenProps<MainTabParamList>, NativeStackScreenProps<RootStackParamList>>
 >;
 

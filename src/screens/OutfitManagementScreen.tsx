@@ -127,12 +127,28 @@ const OutfitManagementScreen = ({ navigation }: Props) => {
       {isSelectionMode ? (
         <DeleteModeHeader selectedCount={selectedItems.size} onCancel={handleCancelSelection} />
       ) : (
-        <View style={styles.header}>
-          <Text style={styles.title}>My Outfits</Text>
-          <Pressable>
-            <MaterialIcons name="filter-list" size={24} color={colors.icon_stroke} />
-          </Pressable>
-        </View>
+        <>
+          <View style={styles.header}>
+            <Text style={styles.title}>Styling</Text>
+            <Pressable>
+              <MaterialIcons name="more-vert" size={22} color={colors.icon_stroke} />
+            </Pressable>
+          </View>
+          <View style={styles.segmentRow}>
+            <View style={[styles.segment, styles.segmentActive]}>
+              <Text style={[styles.segmentText, styles.segmentTextActive]}>Dress Me</Text>
+            </View>
+            <View style={styles.segment}>
+              <Text style={styles.segmentText}>Canvas</Text>
+            </View>
+            <View style={styles.segment}>
+              <Text style={styles.segmentText}>Moodboard</Text>
+            </View>
+            <Pressable style={styles.saveBtn}>
+              <Text style={styles.saveBtnText}>Save</Text>
+            </Pressable>
+          </View>
+        </>
       )}
 
       {/* Tags Filter Section */}
@@ -171,10 +187,43 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: typography.bold,
     color: colors.text_primary,
   },
+  segmentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    gap: 8,
+    paddingBottom: 8,
+  },
+  segment: {
+    height: 32,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: colors.border_gray_light,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentActive: {
+    backgroundColor: colors.tag_dark,
+    borderColor: colors.tag_dark,
+  },
+  segmentText: { fontFamily: typography.medium, fontSize: 12, color: colors.text_gray },
+  segmentTextActive: { color: colors.tag_dark_text },
+  saveBtn: {
+    marginLeft: 'auto',
+    height: 32,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: colors.accent_lime,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveBtnText: { fontFamily: typography.semiBold, color: colors.text_primary },
   gridContent: {
     padding: GRID_PADDING,
   },

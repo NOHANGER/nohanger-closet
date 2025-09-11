@@ -13,7 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow Nohanger Closet to use your camera to take photos.",
+        "NSPhotoLibraryUsageDescription": "Allow Nohanger Closet to access your photo library to pick images."
+      }
     },
     "android": {
       "adaptiveIcon": {

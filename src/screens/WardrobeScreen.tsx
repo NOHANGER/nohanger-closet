@@ -1,21 +1,25 @@
 import React, { useContext, useMemo, useState } from "react";
-import { View, Text, StyleSheet, Image, FlatList, TextInput, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Image, FlatList, TextInput, ScrollView, Alert } from "react-native";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { MainTabScreenProps } from "../types/navigation";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../types/navigation";
 import { colors } from "../styles/colors";
 import { typography } from "../styles/globalStyles";
 import PressableFade from "../components/common/PressableFade";
 import { ClothingContext } from "../contexts/ClothingContext";
+import { AuthContext } from "../contexts/AuthContext";
 import { OutfitContext } from "../contexts/OutfitContext";
 
 type Props = MainTabScreenProps<"Profile">;
 
 const demoTags = ["ANDROGYNOUS", "BIKER", "BOHO"];
 
-const WardrobeScreen = (_props: Props) => {
+const WardrobeScreen = ({ navigation }: Props) => {
   const clothing = useContext(ClothingContext);
   const outfits = useContext(OutfitContext);
+  const auth = useContext(AuthContext);
 
   const [query, setQuery] = useState("");
 
@@ -42,7 +46,11 @@ const WardrobeScreen = (_props: Props) => {
         {/* Top Header background */}
         <View style={styles.headerBg}>
           <View style={styles.headerRow}>
-            <Image source={require("../../assets/icon.png")} style={styles.avatar} />
+            {auth?.profile?.avatarUri ? (
+              <Image key={auth.profile.avatarUri} source={{ uri: auth.profile.avatarUri }} style={styles.avatar} />
+            ) : (
+              <Image source={require("../../assets/icon.png")} style={styles.avatar} />
+            )}
             <View style={styles.headerActions}>
               <HeaderCircleIcon icon={<MaterialIcons name="bookmark-border" size={20} color={colors.icon_stroke} />} />
               <HeaderCircleIcon icon={<MaterialIcons name="grid-view" size={20} color={colors.icon_stroke} />} />
@@ -52,9 +60,21 @@ const WardrobeScreen = (_props: Props) => {
         </View>
 
         {/* Overflow menu (visual only) */}
-        <View style={styles.overflowMenu}>
+        <PressableFade
+          style={styles.overflowMenu}
+          onPress={() =>
+            Alert.alert("Account", "What would you like to do?", [
+              { text: "Cancel", style: "cancel" },
+              {
+                text: "Log out",
+                style: "destructive",
+                onPress: () => auth?.logout?.(),
+              },
+            ])
+          }
+        >
           <MaterialIcons name="more-vert" size={22} color={colors.icon_stroke} />
-        </View>
+        </PressableFade>
 
         {/* Profile Card */}
         <View style={styles.profileCard}>
@@ -96,6 +116,19 @@ const WardrobeScreen = (_props: Props) => {
           <SquareIconButton icon={<MaterialIcons name="sort" size={20} color={colors.icon_stroke} />} />
         </View>
 
+        {/* Account actions */}
+        <PressableFade
+          style={styles.logoutBtn}
+          onPress={() =>
+            Alert.alert("Log out", "Are you sure you want to log out?", [
+              { text: "Cancel", style: "cancel" },
+              { text: "Log out", style: "destructive", onPress: () => auth?.logout?.() },
+            ])
+          }
+        >
+          <Text style={styles.logoutText}>Log out</Text>
+        </PressableFade>
+
         {/* Grid */}
         <FlatList
           data={filtered}
@@ -105,7 +138,15 @@ const WardrobeScreen = (_props: Props) => {
           contentContainerStyle={styles.gridContent}
           columnWrapperStyle={{ gap: 12 }}
           renderItem={({ item }) => (
-            <View style={styles.card}>
+            <PressableFade
+              containerStyle={styles.card}
+              style={{ flex: 1 }}
+              onPress={() =>
+                navigation
+                  .getParent<NativeStackNavigationProp<RootStackParamList>>()
+                  ?.navigate("ClothingDetailModal", { id: item.id })
+              }
+            >
               <View style={styles.cardTopIcons}>
                 <MaterialCommunityIcons name="eye-outline" size={18} color={colors.text_gray_light} />
                 <MaterialCommunityIcons name="heart-outline" size={18} color={colors.text_gray_light} />
@@ -115,7 +156,7 @@ const WardrobeScreen = (_props: Props) => {
                 style={styles.cardImage}
                 resizeMode="contain"
               />
-            </View>
+            </PressableFade>
           )}
           ListEmptyComponent={
             <View style={styles.emptyState}>
@@ -351,6 +392,21 @@ const styles = StyleSheet.create({
     color: colors.text_gray,
     fontSize: 13,
   },
+  logoutBtn: {
+    alignSelf: "flex-start",
+    marginTop: 14,
+    marginLeft: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border_gray_light,
+    backgroundColor: "#fff",
+  },
+  logoutText: {
+    color: colors.primary_red,
+    fontFamily: typography.medium,
+  },
   fab: {
     position: "absolute",
     right: 22,
@@ -370,4 +426,3 @@ const styles = StyleSheet.create({
 });
 
 export default WardrobeScreen;
-
