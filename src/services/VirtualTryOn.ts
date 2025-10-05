@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import jwt from "expo-jwt";
 
 const API_BASE_URL = "https://api.klingai.com";
@@ -182,7 +182,8 @@ export const virtualTryOn = async (request: TryOnRequest): Promise<TryOnResponse
     console.debug("[VTON Service] Result Received Time:", new Date().toISOString());
 
     // Download result image and save locally
-    const localUri = `${FileSystem.cacheDirectory}try-on-${taskId}.jpg`;
+    const baseDir = FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? "";
+    const localUri = `${baseDir}try-on-${taskId}.jpg`;
     await FileSystem.downloadAsync(resultUrl, localUri);
     console.debug("[VTON Service] Image Downloaded Time:", new Date().toISOString());
 

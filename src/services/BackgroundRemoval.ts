@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
 import { removeBackgroundNative } from "../native/BackgroundRemoval";
 
@@ -128,7 +128,7 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
     }
 
     // Download the processed image
-    const fileUri = FileSystem.documentDirectory + `background-removed-${Date.now()}.png`;
+    const fileUri = (FileSystem.documentDirectory ?? FileSystem.cacheDirectory ?? "") + `background-removed-${Date.now()}.png`;
     const downloadResumable = FileSystem.createDownloadResumable(imageUrl, fileUri);
 
     const downloadResult = await downloadResumable.downloadAsync();

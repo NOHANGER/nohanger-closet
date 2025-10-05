@@ -21,13 +21,13 @@ const DUMMY_FEED: FeedItem[] = [
   {
     id: "1",
     title: "Suggested for you",
-    image: require("../../release_assets/all_outfits.png"),
+    image: require("../../assets/community/all_outfits.png"),
     suggested: true,
   },
   {
     id: "2",
     title: "Minimal street style",
-    image: require("../../release_assets/outfit_canvas.png"),
+    image: require("../../assets/community/outfit_canvas.png"),
   },
 ];
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Animated, Dimensions, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Animated, Dimensions, Pressable, ViewStyle } from 'react-native';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/globalStyles';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -93,7 +93,7 @@ const SideDrawer: React.FC<Props> = ({ visible, onClose, profile, following, fol
 };
 
 const styles = StyleSheet.create({
-  backdrop: { ...(StyleSheet.absoluteFillObject as Record<string, number | string>), backgroundColor: 'rgba(0,0,0,0.25)' },
+  backdrop: { ...(StyleSheet.absoluteFillObject as ViewStyle), backgroundColor: 'rgba(0,0,0,0.25)' },
   panel: { position: 'absolute', top: 0, bottom: 0, left: 0, backgroundColor: colors.screen_background, paddingTop: 16, paddingHorizontal: 16, borderRightWidth: 1, borderRightColor: colors.border_gray_light },
   header: { paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.border_gray_light, marginBottom: 10 },
   avatarWrap: { flexDirection: 'row', alignItems: 'center', gap: 12 },

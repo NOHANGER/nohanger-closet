@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -17,7 +16,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Allow Nohanger Closet to use your camera to take photos.",
         "NSPhotoLibraryUsageDescription": "Allow Nohanger Closet to access your photo library to pick images."
-      }
+      },
+      "bundleIdentifier": "com.anonymous.nohanger-closet"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,6 +28,8 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font"]
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

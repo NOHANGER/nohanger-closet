@@ -5,12 +5,19 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "../../styles/colors";
 import { typography } from "../../styles/globalStyles";
 import Header from "../../components/common/Header";
-import { CommunityStackScreenProps } from "../../types/navigation";
+import { CommunityStackScreenProps, MainTabParamList } from "../../types/navigation";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 
 type Props = CommunityStackScreenProps<"CommunityCreate">;
 
 const CreateScreen: React.FC<Props> = ({ navigation }) => {
   const safeAreaEdges: Edge[] = ["top", "left", "right"]; 
+  const tabNavigation = navigation.getParent<BottomTabNavigationProp<MainTabParamList, "Community">>();
+
+  const navigateToOutfitCanvas = () => {
+    tabNavigation?.navigate("Outfits", { screen: "OutfitCanvas", params: { id: undefined } });
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={safeAreaEdges}>
       <Header onBack={() => navigation.goBack()} />
@@ -19,13 +26,7 @@ const CreateScreen: React.FC<Props> = ({ navigation }) => {
         <TouchableOpacity
           style={styles.card}
           activeOpacity={0.9}
-          onPress={() => {
-            try {
-              navigation.navigate('Outfits', { screen: 'OutfitCanvas', params: { id: undefined } });
-            } catch {
-              navigation.navigate('Outfits');
-            }
-          }}
+          onPress={navigateToOutfitCanvas}
         >
           <View style={styles.iconWrap}>
             <MaterialCommunityIcons name="tshirt-crew-outline" size={22} color={colors.text_primary} />
@@ -55,4 +56,3 @@ const styles = StyleSheet.create({
 });
 
 export default CreateScreen;
-

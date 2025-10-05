@@ -14,7 +14,8 @@ Target Users:
 1. Clothing Management:
 
    - Add, view, and categorize clothing items with AI assistance
-   - Automatic background removal and clothing categorization
+   - Automatic background removal and on-device color detection (pure JS, works in Expo Go)
+   - Optional remote categorization/tagging by calling a custom VPS endpoint with the captured image
    - Custom tagging, attributes management and organization options
 
 2. Outfit Management:
@@ -34,7 +35,7 @@ The application follows a modular architecture, separating concerns into distinc
 - UI Layer: Handles the presentation and user interaction, built with React Native components.
 - State Management Layer: Manages global state using React Context API.
 - Data Layer: Handles data storage and retrieval using AsyncStorage and expo-file-system for local data.
-- Service Layer: Manages interactions with third-party APIs for AI functionalities.
+- Service Layer: Handles color detection locally and optionally POSTs images to a custom VPS model for full categorization/tagging.
 - Navigation Layer: Manages screen transitions using React Navigation.
 
 Component Interaction Flow:

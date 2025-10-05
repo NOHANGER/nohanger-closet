@@ -4,8 +4,9 @@ import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { colors } from "../../styles/colors";
 import { typography } from "../../styles/globalStyles";
 import Header from "../../components/common/Header";
-import { CommunityStackScreenProps } from "../../types/navigation";
+import { CommunityStackScreenProps, MainTabParamList } from "../../types/navigation";
 import { MaterialIcons } from "@expo/vector-icons";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 
 type Props = CommunityStackScreenProps<"CommunityPlan">;
 
@@ -18,6 +19,11 @@ const PlanScreen: React.FC<Props> = ({ navigation }) => {
   });
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const safeAreaEdges: Edge[] = ["top", "left", "right"]; 
+  const tabNavigation = navigation.getParent<BottomTabNavigationProp<MainTabParamList, "Community">>();
+
+  const navigateToOutfitCanvas = () => {
+    tabNavigation?.navigate("Outfits", { screen: "OutfitCanvas", params: { id: undefined } });
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={safeAreaEdges}>
@@ -47,10 +53,10 @@ const PlanScreen: React.FC<Props> = ({ navigation }) => {
           const startOffset = firstDay.getDay();
           const startDate = new Date(firstDay);
           startDate.setDate(firstDay.getDate() - startOffset);
-          const rows: JSX.Element[] = [];
+          const rows: React.ReactElement[] = [];
           let cursor = new Date(startDate);
           for (let r = 0; r < 6; r++) {
-            const cells: JSX.Element[] = [];
+            const cells: React.ReactElement[] = [];
             for (let c = 0; c < 7; c++) {
               const isCurrentMonth = cursor.getMonth() === monthAnchor.getMonth();
               const isSelected = !!selectedDate &&
@@ -83,13 +89,7 @@ const PlanScreen: React.FC<Props> = ({ navigation }) => {
         <TouchableOpacity
           style={[styles.createBtn, !selectedDate && { opacity: 0.5 }]}
           disabled={!selectedDate}
-          onPress={() => {
-            try {
-              navigation.navigate('Outfits', { screen: 'OutfitCanvas', params: { id: undefined } });
-            } catch {
-              navigation.navigate('Outfits');
-            }
-          }}
+          onPress={navigateToOutfitCanvas}
           activeOpacity={0.85}
         >
           <Text style={styles.createBtnText}>Create Outfit</Text>
@@ -119,4 +119,3 @@ const styles = StyleSheet.create({
 });
 
 export default PlanScreen;
-

@@ -42,7 +42,7 @@ const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           Alert.alert('Permission required', 'Photo library access is needed.');
           return null;
         }
-        const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1 });
+        const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1 });
         return res.canceled ? null : res.assets[0].uri;
       }
     } catch (e) {

@@ -76,6 +76,7 @@ const CommunityStackNavigator = () => (
 // Main Tab Navigator
 const MainTabNavigator = () => (
   <Tab.Navigator
+    sceneContainerStyle={{ backgroundColor: colors.screen_background }}
     screenOptions={{
       headerShown: false,
       tabBarStyle: styles.tabBar,
@@ -96,8 +97,6 @@ const MainTabNavigator = () => (
         />
       ),
       tabBarHideOnKeyboard: true,
-      // Ensure scenes behind the floating tab bar match background
-      sceneContainerStyle: { backgroundColor: colors.screen_background },
     }}
   >
     <Tab.Screen

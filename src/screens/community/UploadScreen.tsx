@@ -20,7 +20,7 @@ const UploadScreen: React.FC<Props> = ({ navigation }) => {
       Alert.alert("Permission required", "We need gallery permission to select photos.");
       return;
     }
-    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1 });
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1 });
     if (!res.canceled) {
       try {
         const id = await clothing?.addClothingItemFromImage?.(res.assets[0].uri);
