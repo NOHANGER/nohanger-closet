@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system/legacy";
 import ViewShot, { CaptureOptions } from "react-native-view-shot";
 import { OutfitStackScreenProps } from "../types/navigation";
 import { colors } from "../styles/colors";
@@ -70,7 +71,7 @@ const OutfitCanvasScreen = ({ navigation, route }: Props) => {
         scale: 1,
         rotation: 0,
       },
-      zIndex: canvasItems.length + 1,
+      zIndex: Math.max(0, ...canvasItems.map((i) => i.zIndex)) + 1,
     };
     setCanvasItems((prev) => [...prev, newItem]);
   };
@@ -109,13 +110,21 @@ const OutfitCanvasScreen = ({ navigation, route }: Props) => {
       // Wait a frame to ensure background is removed
       await new Promise((resolve) => requestAnimationFrame(resolve));
 
-      const uri = await viewShotRef.current.capture({
+      const tempUri = await viewShotRef.current.capture({
         format: "png",
         quality: 1,
-        result: "base64",
+        result: "tmpfile",
       });
 
-      return uri;
+      const fileName = `outfit-${Date.now()}.png`;
+      const permanentUri = `${FileSystem.documentDirectory}${fileName}`;
+
+      await FileSystem.moveAsync({
+        from: tempUri,
+        to: permanentUri,
+      });
+
+      return permanentUri;
     } catch (error) {
       console.error("Error capturing canvas:", error);
       throw error;

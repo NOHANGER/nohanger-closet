@@ -65,12 +65,15 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
     const responseData = await response.json();
     const { status_url, response_url } = responseData;
 
-    if (!status_url || !response_url) {
-      throw new Error("Invalid response from background removal API");
+    if (!status_url) {
+      throw new Error("Invalid response from background removal API: Missing status_url");
     }
 
     // Poll for status
     let status = "";
+    // If response_url is missing, we might need to rely on statusData to provide result or response_url
+    let finalResponseUrl = response_url;
+
     while (status !== "COMPLETED") {
       await new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -95,13 +98,21 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
       const statusData = await statusResponse.json();
       status = statusData.status;
 
+      if (statusData.response_url) {
+        finalResponseUrl = statusData.response_url;
+      }
+
       if (status === "FAILED" || status === "CANCELLED") {
         throw new Error(`Background removal request ${status}`);
       }
     }
 
+    if (!finalResponseUrl) {
+       throw new Error("No response_url found after completion");
+    }
+
     // Get the result
-    const resultResponse = await fetch(response_url, {
+    const resultResponse = await fetch(finalResponseUrl, {
       method: "GET",
       headers: {
         Authorization: `Key ${FAL_API_KEY}`,
@@ -121,14 +132,14 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
 
     const resultData = await resultResponse.json();
     console.debug("[BG Removal Service] Process Complete Time:", new Date().toISOString());
-    const imageUrl = resultData.image.url;
+    const imageUrl = resultData.image?.url;
 
     if (!imageUrl) {
       throw new Error("No image URL in the result");
     }
 
     // Download the processed image
-    const fileUri = (FileSystem.documentDirectory ?? FileSystem.cacheDirectory ?? "") + `background-removed-${Date.now()}.png`;
+    const fileUri = `${FileSystem.documentDirectory}background-removed-${Date.now()}.png`;
     const downloadResumable = FileSystem.createDownloadResumable(imageUrl, fileUri);
 
     const downloadResult = await downloadResumable.downloadAsync();
