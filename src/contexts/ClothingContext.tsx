@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode, useMemo, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from "expo-file-system/legacy";
 import { v4 as uuidv4 } from "uuid";
 import { ClothingItem, createNewClothingItem } from "../types/ClothingItem";
 import { categories } from "../data/categories";
@@ -167,10 +168,25 @@ export const ClothingProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const addClothingItemFromImage = useCallback(
     async (imageUri: string, callbacks?: ProcessingCallbacks): Promise<string> => {
+      const newId = uuidv4();
+      let finalImageUri = imageUri;
+
+      try {
+        const fileName = `clothing-${newId}-${Date.now()}.jpg`;
+        const permanentUri = `${FileSystem.documentDirectory}${fileName}`;
+        await FileSystem.copyAsync({
+          from: imageUri,
+          to: permanentUri,
+        });
+        finalImageUri = permanentUri;
+      } catch (e) {
+        console.error("Error copying image to permanent storage:", e);
+      }
+
       // Create a new clothing item with initial state
       const newItem = {
-        ...createNewClothingItem(imageUri),
-        id: uuidv4(),
+        ...createNewClothingItem(finalImageUri),
+        id: newId,
       };
 
       // Add the item to state immediately
@@ -195,7 +211,7 @@ export const ClothingProvider: React.FC<{ children: ReactNode }> = ({ children }
           );
 
           // Process the image
-          const backgroundRemovedImageUri = await removeBackground(imageUri);
+          const backgroundRemovedImageUri = await removeBackground(finalImageUri);
 
           // Update the item with the processed image
           setClothingItems((prev) =>
@@ -263,7 +279,7 @@ export const ClothingProvider: React.FC<{ children: ReactNode }> = ({ children }
           );
 
           // Get AI categorization
-          const categoryData = await categorizeClothing(imageUri);
+          const categoryData = await categorizeClothing(finalImageUri);
 
           // Update the item with the categorization data
           setClothingItems((prev) =>
