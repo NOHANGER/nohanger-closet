@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from "expo-file-system/legacy";
 import { VirtualTryOnItem } from "../types/VirtualTryOn";
 import { v4 as uuidv4 } from "uuid";
 
@@ -43,12 +44,34 @@ export const VirtualTryOnProvider: React.FC<{ children: ReactNode }> = ({ childr
   }, [recentTryOns]);
 
   const addTryOn = async (tryOn: Omit<VirtualTryOnItem, "id" | "createdAt" | "updatedAt">) => {
+    let finalUserPhotoUri = tryOn.userPhotoUri;
+    let finalNewClothingImageUri = tryOn.newClothingImageUri;
+
+    try {
+      const timestamp = Date.now();
+      const userPhotoName = `tryon-user-${timestamp}.jpg`;
+      const userPhotoDest = `${FileSystem.documentDirectory}${userPhotoName}`;
+      await FileSystem.copyAsync({ from: tryOn.userPhotoUri, to: userPhotoDest });
+      finalUserPhotoUri = userPhotoDest;
+
+      if (tryOn.newClothingImageUri) {
+        const clothingName = `tryon-clothing-${timestamp}.jpg`;
+        const clothingDest = `${FileSystem.documentDirectory}${clothingName}`;
+        await FileSystem.copyAsync({ from: tryOn.newClothingImageUri, to: clothingDest });
+        finalNewClothingImageUri = clothingDest;
+      }
+    } catch (e) {
+      console.error("Error copying try-on images:", e);
+    }
+
     const now = new Date().toISOString();
     const newTryOn: VirtualTryOnItem = {
       id: uuidv4(),
       createdAt: now,
       updatedAt: now,
       ...tryOn,
+      userPhotoUri: finalUserPhotoUri,
+      newClothingImageUri: finalNewClothingImageUri,
     };
 
     setRecentTryOns((prev) => [newTryOn, ...prev].slice(0, 100)); // Keep only the 100 most recent

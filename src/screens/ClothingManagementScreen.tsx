@@ -133,7 +133,7 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
     });
 

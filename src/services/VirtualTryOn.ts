@@ -182,7 +182,7 @@ export const virtualTryOn = async (request: TryOnRequest): Promise<TryOnResponse
     console.debug("[VTON Service] Result Received Time:", new Date().toISOString());
 
     // Download result image and save locally
-    const baseDir = FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? "";
+    const baseDir = FileSystem.documentDirectory;
     const localUri = `${baseDir}try-on-${taskId}.jpg`;
     await FileSystem.downloadAsync(resultUrl, localUri);
     console.debug("[VTON Service] Image Downloaded Time:", new Date().toISOString());

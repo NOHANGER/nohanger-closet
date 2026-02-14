@@ -65,7 +65,7 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
       aspect: [3, 4],
       quality: 1,
