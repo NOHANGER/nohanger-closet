@@ -13,6 +13,8 @@ import { ClothingProvider } from "./src/contexts/ClothingContext";
 import { VirtualTryOnProvider } from "./src/contexts/VirtualTryOnContext";
 import { OutfitProvider } from "./src/contexts/OutfitContext";
 import { AuthProvider } from "./src/contexts/AuthContext";
+import { PlannerProvider } from "./src/contexts/PlannerContext";
+import { SettingsProvider } from "./src/contexts/SettingsContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet, ActivityIndicator, View } from "react-native";
 
@@ -36,15 +38,19 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <AuthProvider>
-        <ClothingProvider>
-          <OutfitProvider>
-            <VirtualTryOnProvider>
-              <AppNavigator />
-            </VirtualTryOnProvider>
-          </OutfitProvider>
-        </ClothingProvider>
-      </AuthProvider>
+      <SettingsProvider>
+        <AuthProvider>
+          <ClothingProvider>
+            <OutfitProvider>
+              <PlannerProvider>
+                <VirtualTryOnProvider>
+                  <AppNavigator />
+                </VirtualTryOnProvider>
+              </PlannerProvider>
+            </OutfitProvider>
+          </ClothingProvider>
+        </AuthProvider>
+      </SettingsProvider>
     </GestureHandlerRootView>
   );
 }

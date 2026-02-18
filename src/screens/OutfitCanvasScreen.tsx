@@ -170,9 +170,10 @@ const OutfitCanvasScreen = ({ navigation, route }: Props) => {
           createdAt: now,
           updatedAt: now,
           clothingItems: canvasItems,
-          tags: [], // Initialize with empty arrays for new outfits
+          tags: [],
           season: [],
           occasion: [],
+          isFavorite: false,
         };
         outfitContext.addOutfit(outfit);
       }

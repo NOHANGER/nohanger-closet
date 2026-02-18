@@ -145,7 +145,7 @@ const ClothingDetailScreen = ({ route, navigation }: Props) => {
     return <Text>Loading...</Text>;
   }
 
-  const { getClothingItem, updateClothingItem, deleteClothingItem } = context;
+  const { getClothingItem, updateClothingItem, deleteClothingItem, toggleFavorite } = context;
 
   // Get the initial item from context
   const contextItem = getClothingItem(id);
@@ -249,29 +249,42 @@ const ClothingDetailScreen = ({ route, navigation }: Props) => {
 
   return (
     <SafeAreaView style={styles.container} edges={safeAreaEdges}>
-      <Header
-        onBack={() => {
-          if (isDirty) {
-            Alert.alert("Unsaved Changes", "Do you want to save your changes?", [
-              {
-                text: "Discard",
-                style: "destructive",
-                onPress: () => navigation.goBack(),
-              },
-              {
-                text: "Save",
-                onPress: () => {
-                  handleSave();
-                  navigation.goBack();
+      <View style={styles.headerRow}>
+        <Header
+          onBack={() => {
+            if (isDirty) {
+              Alert.alert("Unsaved Changes", "Do you want to save your changes?", [
+                {
+                  text: "Discard",
+                  style: "destructive",
+                  onPress: () => navigation.goBack(),
                 },
-              },
-            ]);
-          } else {
-            navigation.goBack();
-          }
-        }}
-        onDelete={handleDelete}
-      />
+                {
+                  text: "Save",
+                  onPress: () => {
+                    handleSave();
+                    navigation.goBack();
+                  },
+                },
+              ]);
+            } else {
+              navigation.goBack();
+            }
+          }}
+          onDelete={handleDelete}
+        />
+        <Pressable
+          style={styles.favoriteButton}
+          onPress={() => toggleFavorite(id)}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <MaterialCommunityIcons
+            name={localItem.isFavorite ? "heart" : "heart-outline"}
+            size={24}
+            color={localItem.isFavorite ? colors.primary_red : colors.text_gray}
+          />
+        </Pressable>
+      </View>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
@@ -397,6 +410,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.screen_background,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  favoriteButton: {
+    position: "absolute",
+    right: 56,
+    top: 12,
+    padding: 4,
   },
   scrollContent: {
     paddingBottom: CONTAINER.SCROLL_BOTTOM_PADDING,
