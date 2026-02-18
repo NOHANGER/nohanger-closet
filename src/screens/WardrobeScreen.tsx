@@ -1,7 +1,18 @@
-import React, { useContext, useMemo, useState } from "react";
-import { View, Text, StyleSheet, Image, FlatList, TextInput, ScrollView, Alert } from "react-native";
+import React, { useContext, useMemo, useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  FlatList,
+  TextInput,
+  ScrollView,
+  Alert,
+  Platform,
+} from "react-native";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { MainTabScreenProps } from "../types/navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
@@ -11,10 +22,19 @@ import PressableFade from "../components/common/PressableFade";
 import { ClothingContext } from "../contexts/ClothingContext";
 import { AuthContext } from "../contexts/AuthContext";
 import { OutfitContext } from "../contexts/OutfitContext";
+import { ClothingItem } from "../types/ClothingItem";
 
 type Props = MainTabScreenProps<"Profile">;
 
-const demoTags = ["ANDROGYNOUS", "BIKER", "BOHO"];
+type SortOrder = "newest" | "oldest" | "alphabetical";
+
+const SORT_LABELS: Record<SortOrder, string> = {
+  newest: "Newest",
+  oldest: "Oldest",
+  alphabetical: "A-Z",
+};
+
+const SORT_CYCLE: SortOrder[] = ["newest", "oldest", "alphabetical"];
 
 const WardrobeScreen = ({ navigation }: Props) => {
   const clothing = useContext(ClothingContext);
@@ -22,23 +42,211 @@ const WardrobeScreen = ({ navigation }: Props) => {
   const auth = useContext(AuthContext);
 
   const [query, setQuery] = useState("");
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [showHiddenItems, setShowHiddenItems] = useState(false);
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
 
   const items = clothing?.clothingItems || [];
-  const filtered = useMemo(() => {
-    if (!query.trim()) return items;
-    const q = query.toLowerCase();
-    return items.filter(
-      (it) =>
-        it.tags.some((t) => t.toLowerCase().includes(q)) ||
-        it.category.toLowerCase().includes(q) ||
-        it.subcategory.toLowerCase().includes(q)
-    );
-  }, [items, query]);
+  const favoriteItems = clothing?.favoriteItems || [];
+
+  // Build the display list: filter by search, favorites, hidden, then sort
+  const displayItems = useMemo(() => {
+    let result = items;
+
+    // Filter: favorites only
+    if (showFavoritesOnly) {
+      result = result.filter((it) => it.isFavorite);
+    }
+
+    // Filter: hidden items visibility
+    if (!showHiddenItems) {
+      result = result.filter((it) => !it.isHidden);
+    }
+
+    // Filter: search query
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      result = result.filter(
+        (it) =>
+          it.tags.some((t) => t.toLowerCase().includes(q)) ||
+          it.category.toLowerCase().includes(q) ||
+          it.subcategory.toLowerCase().includes(q)
+      );
+    }
+
+    // Sort
+    switch (sortOrder) {
+      case "newest":
+        result = [...result].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        break;
+      case "oldest":
+        result = [...result].sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        break;
+      case "alphabetical":
+        result = [...result].sort((a, b) => {
+          const nameA = a.subcategory || a.category || "";
+          const nameB = b.subcategory || b.category || "";
+          return nameA.localeCompare(nameB);
+        });
+        break;
+    }
+
+    return result;
+  }, [items, query, showFavoritesOnly, showHiddenItems, sortOrder]);
 
   const itemCount = items.length;
   const outfitCount = outfits?.outfits?.length || 0;
+  const favoritesCount = favoriteItems.length;
 
-  const safeAreaEdges: Edge[] = ["top", "left", "right"]; // bottom handled by TabBar
+  // Profile data from AuthContext
+  const displayName = auth?.profile?.displayName || "User";
+  const handle = auth?.profile?.handle || "@user";
+  const bio = auth?.profile?.bio || "";
+
+  // ---- Handlers ----
+
+  const handleFabPress = useCallback(() => {
+    Alert.alert("Add Clothing", "Choose a photo source", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Camera",
+        onPress: async () => {
+          const permission =
+            await ImagePicker.requestCameraPermissionsAsync();
+          if (!permission.granted) {
+            Alert.alert(
+              "Permission needed",
+              "Camera access is required to take photos."
+            );
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ["images"],
+            quality: 0.8,
+          });
+          if (!result.canceled && result.assets?.[0]?.uri) {
+            clothing?.addClothingItemFromImage(result.assets[0].uri);
+          }
+        },
+      },
+      {
+        text: "Library",
+        onPress: async () => {
+          const permission =
+            await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (!permission.granted) {
+            Alert.alert(
+              "Permission needed",
+              "Photo library access is required to choose photos."
+            );
+            return;
+          }
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ["images"],
+            quality: 0.8,
+          });
+          if (!result.canceled && result.assets?.[0]?.uri) {
+            clothing?.addClothingItemFromImage(result.assets[0].uri);
+          }
+        },
+      },
+    ]);
+  }, [clothing]);
+
+  const handleToggleFavorite = useCallback(
+    (id: string) => {
+      clothing?.toggleFavorite(id);
+    },
+    [clothing]
+  );
+
+  const handleToggleHidden = useCallback(
+    (id: string) => {
+      clothing?.toggleHidden(id);
+    },
+    [clothing]
+  );
+
+  const handleToggleFavoritesFilter = useCallback(() => {
+    setShowFavoritesOnly((prev) => !prev);
+  }, []);
+
+  const handleToggleShowHidden = useCallback(() => {
+    setShowHiddenItems((prev) => !prev);
+  }, []);
+
+  const handleCycleSortOrder = useCallback(() => {
+    setSortOrder((prev) => {
+      const currentIndex = SORT_CYCLE.indexOf(prev);
+      const nextIndex = (currentIndex + 1) % SORT_CYCLE.length;
+      return SORT_CYCLE[nextIndex];
+    });
+  }, []);
+
+  const handleOpenDetail = useCallback(
+    (id: string) => {
+      navigation
+        .getParent<NativeStackNavigationProp<RootStackParamList>>()
+        ?.navigate("ClothingDetailModal", { id });
+    },
+    [navigation]
+  );
+
+  const safeAreaEdges: Edge[] = ["top", "left", "right"];
+
+  const renderItem = useCallback(
+    ({ item }: { item: ClothingItem }) => {
+      const isFav = item.isFavorite;
+      const isHid = item.isHidden;
+
+      return (
+        <PressableFade
+          containerStyle={styles.card}
+          style={{ flex: 1 }}
+          onPress={() => handleOpenDetail(item.id)}
+        >
+          <View style={styles.cardTopIcons}>
+            <PressableFade
+              onPress={() => handleToggleHidden(item.id)}
+              style={styles.cardIconHit}
+            >
+              <MaterialCommunityIcons
+                name={isHid ? "eye-off-outline" : "eye-outline"}
+                size={18}
+                color={isHid ? colors.primary_red : colors.text_gray_light}
+              />
+            </PressableFade>
+            <PressableFade
+              onPress={() => handleToggleFavorite(item.id)}
+              style={styles.cardIconHit}
+            >
+              <MaterialCommunityIcons
+                name={isFav ? "heart" : "heart-outline"}
+                size={18}
+                color={isFav ? colors.primary_red : colors.text_gray_light}
+              />
+            </PressableFade>
+          </View>
+          <Image
+            source={{
+              uri: item.backgroundRemovedImageUri || item.imageUri,
+            }}
+            style={[styles.cardImage, isHid && styles.cardImageHidden]}
+            resizeMode="contain"
+          />
+        </PressableFade>
+      );
+    },
+    [handleOpenDetail, handleToggleFavorite, handleToggleHidden]
+  );
+
+  const keyExtractor = useCallback((item: ClothingItem) => item.id, []);
 
   return (
     <SafeAreaView style={styles.container} edges={safeAreaEdges}>
@@ -47,19 +255,55 @@ const WardrobeScreen = ({ navigation }: Props) => {
         <View style={styles.headerBg}>
           <View style={styles.headerRow}>
             {auth?.profile?.avatarUri ? (
-              <Image key={auth.profile.avatarUri} source={{ uri: auth.profile.avatarUri }} style={styles.avatar} />
+              <Image
+                key={auth.profile.avatarUri}
+                source={{ uri: auth.profile.avatarUri }}
+                style={styles.avatar}
+              />
             ) : (
-              <Image source={require("../../assets/icon.png")} style={styles.avatar} />
+              <Image
+                source={require("../../assets/icon.png")}
+                style={styles.avatar}
+              />
             )}
             <View style={styles.headerActions}>
-              <HeaderCircleIcon icon={<MaterialIcons name="bookmark-border" size={20} color={colors.icon_stroke} />} />
-              <HeaderCircleIcon icon={<MaterialIcons name="grid-view" size={20} color={colors.icon_stroke} />} />
-              <HeaderCircleIcon icon={<MaterialIcons name="insights" size={20} color={colors.icon_stroke} />} />
+              <PressableFade
+                style={styles.headerCircle}
+                onPress={handleToggleFavoritesFilter}
+              >
+                <MaterialIcons
+                  name={showFavoritesOnly ? "bookmark" : "bookmark-border"}
+                  size={20}
+                  color={
+                    showFavoritesOnly
+                      ? colors.primary_yellow
+                      : colors.icon_stroke
+                  }
+                />
+              </PressableFade>
+              <HeaderCircleIcon
+                icon={
+                  <MaterialIcons
+                    name="grid-view"
+                    size={20}
+                    color={colors.icon_stroke}
+                  />
+                }
+              />
+              <HeaderCircleIcon
+                icon={
+                  <MaterialIcons
+                    name="insights"
+                    size={20}
+                    color={colors.icon_stroke}
+                  />
+                }
+              />
             </View>
           </View>
         </View>
 
-        {/* Overflow menu (visual only) */}
+        {/* Overflow menu */}
         <PressableFade
           style={styles.overflowMenu}
           onPress={() =>
@@ -73,36 +317,34 @@ const WardrobeScreen = ({ navigation }: Props) => {
             ])
           }
         >
-          <MaterialIcons name="more-vert" size={22} color={colors.icon_stroke} />
+          <MaterialIcons
+            name="more-vert"
+            size={22}
+            color={colors.icon_stroke}
+          />
         </PressableFade>
 
         {/* Profile Card */}
         <View style={styles.profileCard}>
-          <Text style={styles.nameRow}>
-            Esdan <Text style={styles.emoji}>💎</Text>
-          </Text>
-          <Text style={styles.handle}>@esdanali</Text>
-          <Text style={styles.bio}>testing</Text>
-
-          <View style={styles.tagRow}>
-            {demoTags.map((t) => (
-              <View style={styles.tagChip} key={t}>
-                <Text style={styles.tagText}>{t}</Text>
-              </View>
-            ))}
-          </View>
+          <Text style={styles.nameRow}>{displayName}</Text>
+          <Text style={styles.handle}>{handle}</Text>
+          {bio ? <Text style={styles.bio}>{bio}</Text> : null}
 
           <View style={styles.statRow}>
             <StatBlock value={itemCount} label="Items" highlight />
             <StatBlock value={outfitCount} label="Outfits" />
-            <StatBlock value={0} label="Lookbooks" />
+            <StatBlock value={favoritesCount} label="Favorites" />
           </View>
         </View>
 
         {/* Search + inline actions */}
         <View style={styles.searchRow}>
           <View style={styles.searchBox}>
-            <MaterialIcons name="search" size={20} color={colors.text_gray_light} />
+            <MaterialIcons
+              name="search"
+              size={20}
+              color={colors.text_gray_light}
+            />
             <TextInput
               style={styles.searchInput}
               placeholder="Search"
@@ -111,19 +353,86 @@ const WardrobeScreen = ({ navigation }: Props) => {
               onChangeText={setQuery}
             />
           </View>
-          <SquareIconButton icon={<MaterialIcons name="tune" size={20} color={colors.icon_stroke} />} />
-          <SquareIconButton icon={<MaterialCommunityIcons name="eye-off-outline" size={20} color={colors.icon_stroke} />} />
-          <SquareIconButton icon={<MaterialIcons name="sort" size={20} color={colors.icon_stroke} />} />
+          <SquareIconButton
+            icon={
+              <MaterialCommunityIcons
+                name="eye-off-outline"
+                size={20}
+                color={
+                  showHiddenItems ? colors.primary_yellow : colors.icon_stroke
+                }
+              />
+            }
+            onPress={handleToggleShowHidden}
+            active={showHiddenItems}
+          />
+          <SquareIconButton
+            icon={
+              <MaterialIcons
+                name="sort"
+                size={20}
+                color={colors.icon_stroke}
+              />
+            }
+            onPress={handleCycleSortOrder}
+            label={SORT_LABELS[sortOrder]}
+          />
         </View>
+
+        {/* Active filter indicators */}
+        {(showFavoritesOnly || showHiddenItems || sortOrder !== "newest") && (
+          <View style={styles.activeFiltersRow}>
+            {showFavoritesOnly && (
+              <View style={styles.filterChip}>
+                <MaterialIcons
+                  name="bookmark"
+                  size={14}
+                  color={colors.text_primary}
+                />
+                <Text style={styles.filterChipText}>Favorites only</Text>
+              </View>
+            )}
+            {showHiddenItems && (
+              <View style={styles.filterChip}>
+                <MaterialCommunityIcons
+                  name="eye-off-outline"
+                  size={14}
+                  color={colors.text_primary}
+                />
+                <Text style={styles.filterChipText}>Showing hidden</Text>
+              </View>
+            )}
+            {sortOrder !== "newest" && (
+              <View style={styles.filterChip}>
+                <MaterialIcons
+                  name="sort"
+                  size={14}
+                  color={colors.text_primary}
+                />
+                <Text style={styles.filterChipText}>
+                  {SORT_LABELS[sortOrder]}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Account actions */}
         <PressableFade
           style={styles.logoutBtn}
           onPress={() =>
-            Alert.alert("Log out", "Are you sure you want to log out?", [
-              { text: "Cancel", style: "cancel" },
-              { text: "Log out", style: "destructive", onPress: () => auth?.logout?.() },
-            ])
+            Alert.alert(
+              "Log out",
+              "Are you sure you want to log out?",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Log out",
+                  style: "destructive",
+                  onPress: () => auth?.logout?.(),
+                },
+              ]
+            )
           }
         >
           <Text style={styles.logoutText}>Log out</Text>
@@ -131,44 +440,32 @@ const WardrobeScreen = ({ navigation }: Props) => {
 
         {/* Grid */}
         <FlatList
-          data={filtered}
-          keyExtractor={(it) => it.id}
+          data={displayItems}
+          keyExtractor={keyExtractor}
           numColumns={2}
           scrollEnabled={false}
           contentContainerStyle={styles.gridContent}
           columnWrapperStyle={{ gap: 12 }}
-          renderItem={({ item }) => (
-            <PressableFade
-              containerStyle={styles.card}
-              style={{ flex: 1 }}
-              onPress={() =>
-                navigation
-                  .getParent<NativeStackNavigationProp<RootStackParamList>>()
-                  ?.navigate("ClothingDetailModal", { id: item.id })
-              }
-            >
-              <View style={styles.cardTopIcons}>
-                <MaterialCommunityIcons name="eye-outline" size={18} color={colors.text_gray_light} />
-                <MaterialCommunityIcons name="heart-outline" size={18} color={colors.text_gray_light} />
-              </View>
-              <Image
-                source={{ uri: item.backgroundRemovedImageUri || item.imageUri }}
-                style={styles.cardImage}
-                resizeMode="contain"
-              />
-            </PressableFade>
-          )}
+          renderItem={renderItem}
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No items yet</Text>
-              <Text style={styles.emptySub}>Add clothes to see them here</Text>
+              <Text style={styles.emptyText}>
+                {showFavoritesOnly
+                  ? "No favorite items"
+                  : "No items yet"}
+              </Text>
+              <Text style={styles.emptySub}>
+                {showFavoritesOnly
+                  ? "Tap the heart icon on items to add favorites"
+                  : "Add clothes to see them here"}
+              </Text>
             </View>
           }
         />
       </ScrollView>
 
       {/* Floating Add */}
-      <PressableFade style={styles.fab} onPress={() => {}}>
+      <PressableFade style={styles.fab} onPress={handleFabPress}>
         <MaterialIcons name="add" size={26} color="#fff" />
       </PressableFade>
     </SafeAreaView>
@@ -179,15 +476,46 @@ const HeaderCircleIcon = ({ icon }: { icon: React.ReactNode }) => (
   <View style={styles.headerCircle}>{icon}</View>
 );
 
-const StatBlock = ({ value, label, highlight }: { value: number; label: string; highlight?: boolean }) => (
+const StatBlock = ({
+  value,
+  label,
+  highlight,
+}: {
+  value: number;
+  label: string;
+  highlight?: boolean;
+}) => (
   <View style={styles.statBlock}>
-    <Text style={[styles.statValue, highlight && styles.statHighlight]}>{value}</Text>
-    <Text style={[styles.statLabel, highlight && styles.statLabelHighlight]}>{label}</Text>
+    <Text style={[styles.statValue, highlight && styles.statHighlight]}>
+      {value}
+    </Text>
+    <Text style={[styles.statLabel, highlight && styles.statLabelHighlight]}>
+      {label}
+    </Text>
   </View>
 );
 
-const SquareIconButton = ({ icon }: { icon: React.ReactNode }) => (
-  <PressableFade style={styles.squareBtn}>{icon}</PressableFade>
+const SquareIconButton = ({
+  icon,
+  onPress,
+  active,
+  label,
+}: {
+  icon: React.ReactNode;
+  onPress?: () => void;
+  active?: boolean;
+  label?: string;
+}) => (
+  <PressableFade
+    style={[
+      styles.squareBtn,
+      active && styles.squareBtnActive,
+    ]}
+    onPress={onPress}
+  >
+    {icon}
+    {label ? <Text style={styles.squareBtnLabel}>{label}</Text> : null}
+  </PressableFade>
 );
 
 const styles = StyleSheet.create({
@@ -200,7 +528,7 @@ const styles = StyleSheet.create({
   },
   headerBg: {
     height: 140,
-    backgroundColor: "#D9C2FF", // soft purple to match mock
+    backgroundColor: "#D9C2FF",
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
     paddingHorizontal: 16,
@@ -258,9 +586,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: colors.text_primary,
   },
-  emoji: {
-    fontSize: 18,
-  },
   handle: {
     marginTop: 2,
     fontFamily: typography.medium,
@@ -272,24 +597,6 @@ const styles = StyleSheet.create({
     fontFamily: typography.regular,
     fontSize: 13,
     color: colors.text_gray_light,
-  },
-  tagRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12,
-  },
-  tagChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-    backgroundColor: colors.tag_light,
-  },
-  tagText: {
-    fontFamily: typography.medium,
-    fontSize: 12,
-    color: colors.text_primary,
-    letterSpacing: 0.2,
   },
   statRow: {
     flexDirection: "row",
@@ -341,7 +648,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   squareBtn: {
-    width: 40,
+    minWidth: 40,
     height: 40,
     alignItems: "center",
     justifyContent: "center",
@@ -349,6 +656,38 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border_gray_light,
+    paddingHorizontal: 6,
+  },
+  squareBtnActive: {
+    borderColor: colors.primary_yellow,
+    backgroundColor: colors.light_yellow,
+  },
+  squareBtnLabel: {
+    fontFamily: typography.medium,
+    fontSize: 8,
+    color: colors.text_gray,
+    marginTop: 1,
+  },
+  activeFiltersRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 16,
+    marginTop: 8,
+    gap: 8,
+  },
+  filterChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: colors.light_yellow,
+  },
+  filterChipText: {
+    fontFamily: typography.medium,
+    fontSize: 11,
+    color: colors.text_primary,
   },
   gridContent: {
     paddingHorizontal: 16,
@@ -373,9 +712,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     zIndex: 1,
   },
+  cardIconHit: {
+    padding: 4,
+  },
   cardImage: {
     width: "100%",
     height: "100%",
+  },
+  cardImageHidden: {
+    opacity: 0.35,
   },
   emptyState: {
     alignItems: "center",

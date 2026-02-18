@@ -50,6 +50,11 @@ type ClothingContextType = {
   addClothingItemFromImage: (imageUri: string, callbacks?: ProcessingCallbacks) => Promise<string>; // Returns new item ID
   updateClothingItem: (item: ClothingItem) => void;
   deleteClothingItem: (id: string) => void;
+
+  // Favorite & visibility
+  toggleFavorite: (id: string) => void;
+  toggleHidden: (id: string) => void;
+  favoriteItems: ClothingItem[];
 };
 
 export const ClothingContext = createContext<ClothingContextType | null>(null);
@@ -353,6 +358,31 @@ export const ClothingProvider: React.FC<{ children: ReactNode }> = ({ children }
     setClothingItems((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
+  const toggleFavorite = useCallback((id: string) => {
+    setClothingItems((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, isFavorite: !item.isFavorite, updatedAt: new Date().toISOString() }
+          : item
+      )
+    );
+  }, []);
+
+  const toggleHidden = useCallback((id: string) => {
+    setClothingItems((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, isHidden: !item.isHidden, updatedAt: new Date().toISOString() }
+          : item
+      )
+    );
+  }, []);
+
+  const favoriteItems = useMemo(
+    () => clothingItems.filter((item) => item.isFavorite),
+    [clothingItems]
+  );
+
   const contextValue = {
     // Data
     clothingItems,
@@ -370,6 +400,11 @@ export const ClothingProvider: React.FC<{ children: ReactNode }> = ({ children }
     addClothingItemFromImage,
     updateClothingItem,
     deleteClothingItem,
+
+    // Favorite & visibility
+    toggleFavorite,
+    toggleHidden,
+    favoriteItems,
   };
 
   return <ClothingContext.Provider value={contextValue}>{children}</ClothingContext.Provider>;

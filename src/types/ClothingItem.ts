@@ -13,6 +13,8 @@ export interface ClothingItem {
   brand: string;
   purchaseDate: string;
   price: number;
+  isFavorite: boolean;
+  isHidden: boolean;
 
   // processing status fields
   processingStatus: {
@@ -41,6 +43,8 @@ export const createNewClothingItem = (imageUri: string): ClothingItem => ({
   brand: "",
   purchaseDate: "",
   price: 0,
+  isFavorite: false,
+  isHidden: false,
   processingStatus: {
     backgroundRemoval: "pending",
     categorization: "pending",

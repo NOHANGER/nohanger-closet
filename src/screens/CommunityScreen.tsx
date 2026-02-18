@@ -1,11 +1,12 @@
 import React, { useMemo, useState, useContext } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView } from "react-native";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../styles/colors";
 import { typography } from "../styles/globalStyles";
 import { MaterialIcons, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../contexts/AuthContext";
+import { OutfitContext } from "../contexts/OutfitContext";
 import { CommunityStackParamList } from "../types/navigation";
 import SideDrawer from "../components/community/SideDrawer";
 import { Share, Alert } from "react-native";
@@ -13,19 +14,20 @@ import { Share, Alert } from "react-native";
 type FeedItem = {
   id: string;
   title: string;
-  image: any; // static require
+  image: any; // static require or { uri: string }
   suggested?: boolean;
+  isUserOutfit?: boolean;
 };
 
-const DUMMY_FEED: FeedItem[] = [
+const STATIC_FEED: FeedItem[] = [
   {
-    id: "1",
+    id: "static_1",
     title: "Suggested for you",
     image: require("../../assets/community/all_outfits.png"),
     suggested: true,
   },
   {
-    id: "2",
+    id: "static_2",
     title: "Minimal street style",
     image: require("../../assets/community/outfit_canvas.png"),
   },
@@ -44,7 +46,7 @@ const CommunityScreen: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<typeof FILTERS[number]>(FILTERS[0]);
   const [reactions, setReactions] = useState<Record<string, number>>({});
 
-  const feed = useMemo(() => DUMMY_FEED, []);
+  const feed = useMemo(() => STATIC_FEED, []);
   const auth = useContext(AuthContext);
   const avatarUri = auth?.profile?.avatarUri;
   const [drawerOpen, setDrawerOpen] = useState(false);
