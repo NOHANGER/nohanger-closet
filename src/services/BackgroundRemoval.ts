@@ -2,33 +2,37 @@ import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
 import { removeBackgroundNative } from "../native/BackgroundRemoval";
 
+// WARNING: EXPO_PUBLIC_ variables are compiled into the app bundle and can be
+// extracted from the binary. Before shipping to production, proxy this API call
+// through a secure backend that holds the FAL_KEY server-side.
 const FAL_API_KEY = process.env.EXPO_PUBLIC_FAL_KEY;
 const API_ENDPOINT = "https://queue.fal.run/fal-ai/birefnet/v2";
+
+const MAX_POLL_RETRIES = 30; // ~6 seconds at 200ms intervals
 
 // If API key is not present, we fall back to a no-op mode
 const BG_REMOVAL_DISABLED = !FAL_API_KEY || process.env.EXPO_PUBLIC_BG_REMOVAL === "off";
 
 export const removeBackground = async (imageUri: string): Promise<string> => {
-  console.debug("[BG Removal Service] Request Initiated Time:", new Date().toISOString());
+  if (__DEV__) console.debug("[BG Removal Service] Request Initiated:", new Date().toISOString());
   // Prefer on-device iOS path if available
   if (Platform.OS === 'ios') {
     try {
       const nativeOut = await removeBackgroundNative(imageUri);
-      console.debug("[BG Removal Service] Used iOS native Vision segmentation.");
+      if (__DEV__) console.debug("[BG Removal Service] Used iOS native Vision segmentation.");
       if (nativeOut) return nativeOut;
     } catch (e) {
-      console.warn("[BG Removal Service] iOS native removal unavailable. Falling back.", e);
+      if (__DEV__) console.warn("[BG Removal Service] iOS native removal unavailable. Falling back.", e);
     }
   }
   if (BG_REMOVAL_DISABLED) {
-    console.warn("[BG Removal Service] No API key configured. Returning original image URI.");
+    if (__DEV__) console.warn("[BG Removal Service] No API key configured. Returning original image URI.");
     return imageUri;
   }
   try {
     // Read the image file and convert it to Base64
     const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding: FileSystem.EncodingType.Base64 });
     const base64Uri = `data:image/jpeg;base64,${base64}`;
-    console.debug("[BG Removal Service] Image Read Time:", new Date().toISOString());
 
     // Prepare the payload
     const payload = {
@@ -49,14 +53,12 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
       body: JSON.stringify(payload),
     });
 
-    console.debug("[BG Removal Service] Request Submitted Time:", new Date().toISOString());
-
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Error submitting background removal request:", errorText);
       // Graceful fallback for auth errors or private app access
       if (response.status === 401 || response.status === 403 || /Authentication is required/i.test(errorText)) {
-        console.warn("[BG Removal Service] Auth required or denied. Falling back to original image.");
+        if (__DEV__) console.warn("[BG Removal Service] Auth required or denied. Falling back to original image.");
         return imageUri;
       }
       throw new Error("Failed to submit background removal request");
@@ -69,13 +71,14 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
       throw new Error("Invalid response from background removal API: Missing status_url");
     }
 
-    // Poll for status
+    // Poll for status with a max retry guard
     let status = "";
-    // If response_url is missing, we might need to rely on statusData to provide result or response_url
     let finalResponseUrl = response_url;
+    let pollRetries = 0;
 
-    while (status !== "COMPLETED") {
+    while (status !== "COMPLETED" && pollRetries < MAX_POLL_RETRIES) {
       await new Promise((resolve) => setTimeout(resolve, 200));
+      pollRetries++;
 
       const statusResponse = await fetch(status_url, {
         method: "GET",
@@ -89,7 +92,7 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
         const errorText = await statusResponse.text();
         console.error("Error checking status:", errorText);
         if (statusResponse.status === 401 || statusResponse.status === 403 || /Authentication is required/i.test(errorText)) {
-          console.warn("[BG Removal Service] Auth error during status check. Falling back to original image.");
+          if (__DEV__) console.warn("[BG Removal Service] Auth error during status check. Falling back.");
           return imageUri;
         }
         throw new Error("Failed to check status");
@@ -105,6 +108,10 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
       if (status === "FAILED" || status === "CANCELLED") {
         throw new Error(`Background removal request ${status}`);
       }
+    }
+
+    if (status !== "COMPLETED") {
+      throw new Error("Background removal timed out");
     }
 
     if (!finalResponseUrl) {
@@ -124,14 +131,13 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
       const errorText = await resultResponse.text();
       console.error("Error getting result:", errorText);
       if (resultResponse.status === 401 || resultResponse.status === 403 || /Authentication is required/i.test(errorText)) {
-        console.warn("[BG Removal Service] Auth error fetching result. Falling back to original image.");
+        if (__DEV__) console.warn("[BG Removal Service] Auth error fetching result. Falling back.");
         return imageUri;
       }
       throw new Error("Failed to get result");
     }
 
     const resultData = await resultResponse.json();
-    console.debug("[BG Removal Service] Process Complete Time:", new Date().toISOString());
     const imageUrl = resultData.image?.url;
 
     if (!imageUrl) {
@@ -143,7 +149,6 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
     const downloadResumable = FileSystem.createDownloadResumable(imageUrl, fileUri);
 
     const downloadResult = await downloadResumable.downloadAsync();
-    console.debug("[BG Removal Service] Download Complete Time:", new Date().toISOString());
 
     if (downloadResult && downloadResult.status === 200) {
       return downloadResult.uri;

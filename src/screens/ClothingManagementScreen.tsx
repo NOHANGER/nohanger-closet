@@ -266,11 +266,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     marginRight: 8,
-    borderRadius: 20,
-    backgroundColor: colors.thumbnail_background,
+    borderRadius: 18,
+    backgroundColor: colors.tag_light,
+    borderWidth: 1,
+    borderColor: colors.border_gray_light,
   },
   categoryTabSelected: {
-    backgroundColor: colors.primary_yellow,
+    backgroundColor: colors.light_yellow,
+    borderColor: colors.primary_yellow,
   },
   categoryTabText: {
     fontFamily: typography.medium,

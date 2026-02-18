@@ -18,7 +18,7 @@ import * as ImagePicker from "expo-image-picker";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../styles/colors";
-import { typography } from "../styles/globalStyles";
+import { elevation, typography } from "../styles/globalStyles";
 import { PlannerContext } from "../contexts/PlannerContext";
 import { OutfitContext } from "../contexts/OutfitContext";
 import { MainTabParamList } from "../types/navigation";
@@ -498,7 +498,7 @@ const PlannerScreen: React.FC = () => {
                 disabled={!newEventTitle.trim()}
                 activeOpacity={0.85}
               >
-                <Ionicons name="add" size={22} color={newEventTitle.trim() ? "#fff" : colors.text_gray_light} />
+                <Ionicons name="add" size={22} color={newEventTitle.trim() ? colors.tag_light : colors.text_gray_light} />
               </TouchableOpacity>
             </View>
 
@@ -609,7 +609,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: colors.tag_light,
     borderWidth: 1,
     borderColor: colors.border_gray_light,
   },
@@ -648,12 +648,13 @@ const styles = StyleSheet.create({
   actionCard: {
     width: ACTION_CARD_WIDTH,
     height: 110,
-    backgroundColor: "#fff",
+    backgroundColor: colors.tag_light,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.border_gray_light,
     alignItems: "center",
     justifyContent: "center",
+    ...elevation.card,
   },
   actionIcon: {
     width: 42,
@@ -679,7 +680,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#EAE4FF",
+    backgroundColor: colors.light_yellow,
     borderWidth: 1,
     borderColor: colors.border_gray_light,
     flexDirection: "row",
@@ -711,7 +712,7 @@ const styles = StyleSheet.create({
   plannedOutfitRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: colors.tag_light,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border_gray_light,
@@ -755,7 +756,7 @@ const styles = StyleSheet.create({
   eventRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: colors.tag_light,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border_gray_light,
@@ -858,7 +859,7 @@ const styles = StyleSheet.create({
   eventInput: {
     flex: 1,
     height: 44,
-    backgroundColor: "#fff",
+    backgroundColor: colors.tag_light,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border_gray_light,

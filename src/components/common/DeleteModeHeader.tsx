@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { colors } from "../../styles/colors";
-import { typography } from "../../styles/globalStyles";
+import { elevation, typography } from "../../styles/globalStyles";
 
 type Props = {
   selectedCount: number;
@@ -23,8 +23,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingVertical: 12,
+    backgroundColor: colors.tag_light,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border_gray_light,
+    ...elevation.card,
   },
   selectedText: {
     fontSize: 24,

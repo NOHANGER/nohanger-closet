@@ -38,6 +38,7 @@ const LoginScreen: React.FC = () => {
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.title}>Welcome to Nohanger Closet</Text>
+        <Text style={styles.subtitle}>Build outfits faster with a cleaner wardrobe workflow.</Text>
         <View style={styles.segment}>
           <TouchableOpacity style={[styles.segmentBtn, !isSignUp && styles.segmentBtnActive]} onPress={() => setIsSignUp(false)}>
             <Text style={[styles.segmentText, !isSignUp && styles.segmentTextActive]}>Sign In</Text>
@@ -90,7 +91,7 @@ const LoginScreen: React.FC = () => {
         {!!error && <Text style={styles.error}>{error}</Text>}
 
         <TouchableOpacity style={styles.button} onPress={onSubmit} disabled={submitting}>
-          {submitting ? <ActivityIndicator color="#000" /> : <Text style={styles.buttonText}>{isSignUp ? "Create Account" : "Continue"}</Text>}
+          {submitting ? <ActivityIndicator color={colors.text_primary} /> : <Text style={styles.buttonText}>{isSignUp ? "Create Account" : "Continue"}</Text>}
         </TouchableOpacity>
         <Text style={styles.hint}>
           Demo only: accounts are stored locally on this device. Use a backend to support real multi-device accounts.
@@ -110,13 +111,16 @@ const styles = StyleSheet.create({
   },
   card: {
     width: "100%",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 1,
+    backgroundColor: colors.tag_light,
+    borderRadius: 20,
+    padding: 22,
+    borderWidth: 1,
+    borderColor: colors.border_gray_light,
+    shadowColor: "#1F2A37",
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
   },
   title: {
     fontFamily: typography.bold,
@@ -129,10 +133,10 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     borderWidth: 1,
     borderColor: colors.border_gray,
-    borderRadius: 10,
+    borderRadius: 12,
     overflow: "hidden",
   },
-  segmentBtn: { flex: 1, alignItems: "center", paddingVertical: 10, backgroundColor: "#fff" },
+  segmentBtn: { flex: 1, alignItems: "center", paddingVertical: 10, backgroundColor: colors.tag_light },
   segmentBtnActive: { backgroundColor: colors.light_yellow },
   segmentText: { fontFamily: typography.medium, color: colors.text_gray },
   segmentTextActive: { color: colors.text_primary },
@@ -141,17 +145,18 @@ const styles = StyleSheet.create({
     fontFamily: typography.regular,
     fontSize: 14,
     color: colors.text_gray,
+    lineHeight: 20,
   },
   input: {
     marginTop: 16,
     borderWidth: 1,
     borderColor: colors.border_gray,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 12,
     height: 46,
     fontFamily: typography.regular,
     color: colors.text_primary,
-    backgroundColor: colors.tag_light,
+    backgroundColor: "#FAF8F3",
   },
   error: {
     marginTop: 10,
@@ -161,10 +166,12 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
     height: 48,
-    borderRadius: 10,
+    borderRadius: 12,
     backgroundColor: colors.primary_yellow,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.border_gray,
   },
   buttonText: {
     fontFamily: typography.semiBold,

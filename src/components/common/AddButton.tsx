@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { colors } from "../../styles/colors";
+import { elevation } from "../../styles/globalStyles";
 import PressableFade from "./PressableFade";
 
 const AddButton = ({ onPress }: { onPress: () => void }) => (
@@ -13,14 +14,17 @@ const AddButton = ({ onPress }: { onPress: () => void }) => (
 const styles = StyleSheet.create({
   button: {
     position: "absolute",
-    bottom: 30,
-    right: 30,
+    bottom: 26,
+    right: 22,
     backgroundColor: colors.primary_yellow,
-    borderRadius: 30,
-    width: 60,
-    height: 60,
+    borderRadius: 28,
+    width: 58,
+    height: 58,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.border_gray,
+    ...elevation.floating,
   },
 });
 

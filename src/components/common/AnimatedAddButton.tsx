@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { StyleSheet, Animated, Pressable } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { colors } from "../../styles/colors";
+import { elevation, typography } from "../../styles/globalStyles";
 
 type IconName = React.ComponentProps<typeof MaterialIcons>["name"];
 
@@ -41,7 +42,7 @@ const AnimatedAddButton = ({
 
   const mainButtonColor = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [colors.primary_yellow, colors.light_yellow],
+    outputRange: [colors.primary_yellow, "#F3C46B"],
   });
 
   const renderOptionButton = (
@@ -134,6 +135,9 @@ const styles = StyleSheet.create({
     height: BUTTON_SIZE,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.border_gray,
+    ...elevation.floating,
   },
   mainButtonTouchable: {
     width: "100%",
@@ -155,11 +159,21 @@ const styles = StyleSheet.create({
     height: BUTTON_SIZE,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.border_gray,
+    ...elevation.card,
   },
   buttonLabel: {
     marginRight: 10,
     color: colors.text_primary,
-    fontSize: 16,
+    fontFamily: typography.medium,
+    fontSize: 14,
+    backgroundColor: colors.tag_light,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border_gray_light,
   },
   dimmedBackground: {
     position: "absolute",

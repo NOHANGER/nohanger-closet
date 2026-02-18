@@ -17,6 +17,14 @@ const PRESS_OUT_CONFIG: WithTimingConfig = {
   duration: 130, // Half duration for press out
 };
 
+const SCALE_IN_CONFIG: WithTimingConfig = {
+  duration: 120,
+};
+
+const SCALE_OUT_CONFIG: WithTimingConfig = {
+  duration: 180,
+};
+
 const PressableFade = ({
   activeOpacity = 0.6,
   style,
@@ -28,19 +36,23 @@ const PressableFade = ({
 }: Props) => {
   // Use shared value for better performance
   const opacity = useSharedValue(1);
+  const scale = useSharedValue(1);
 
   // Create animated style using worklet
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
+    transform: [{ scale: scale.value }],
   }));
 
   // Handlers as callbacks to prevent recreating on each render
   const handlePressIn = useCallback(() => {
     opacity.value = withTiming(activeOpacity, PRESS_OUT_CONFIG);
+    scale.value = withTiming(0.98, SCALE_IN_CONFIG);
   }, [activeOpacity]);
 
   const handlePressOut = useCallback(() => {
     opacity.value = withTiming(1, TIMING_CONFIG);
+    scale.value = withTiming(1, SCALE_OUT_CONFIG);
   }, []);
 
   return (

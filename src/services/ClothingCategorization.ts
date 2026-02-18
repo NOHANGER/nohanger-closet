@@ -3,6 +3,9 @@ import * as FileSystem from "expo-file-system/legacy";
 import { extractDominantColors } from "./ColorExtraction";
 
 const REMOTE_TAGGING_DISABLED = process.env.EXPO_PUBLIC_REMOTE_TAGGING === "off";
+// WARNING: EXPO_PUBLIC_ variables are compiled into the app bundle and can be
+// extracted from the binary. Before shipping to production, proxy this API call
+// through a secure backend that holds these credentials server-side.
 const TAGGING_ENDPOINT = process.env.EXPO_PUBLIC_TAGGING_ENDPOINT;
 const TAGGING_API_KEY = process.env.EXPO_PUBLIC_TAGGING_API_KEY;
 
@@ -62,7 +65,7 @@ export const categorizeClothing = async (imageUri: string): Promise<Partial<Clot
   };
 
   try {
-    console.debug("[Categorization Service] Request Initiated Time:", new Date().toISOString());
+    if (__DEV__) console.debug("[Categorization Service] Request Initiated:", new Date().toISOString());
 
     const localColors = await extractDominantColors(imageUri);
     fallback.color = localColors;
@@ -70,7 +73,7 @@ export const categorizeClothing = async (imageUri: string): Promise<Partial<Clot
     const remoteAllowed = Boolean(TAGGING_ENDPOINT) && !REMOTE_TAGGING_DISABLED;
 
     if (!remoteAllowed) {
-      if (!localColors.length) {
+      if (__DEV__ && !localColors.length) {
         console.warn("[Categorization Service] Remote tagging disabled; only colors will be suggested.");
       }
       return fallback;

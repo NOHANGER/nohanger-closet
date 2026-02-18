@@ -160,7 +160,7 @@ const Field: React.FC<{
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.screen_background },
   title: { paddingHorizontal: 16, paddingTop: 6, paddingBottom: 8, fontFamily: typography.bold, fontSize: 18, color: colors.text_primary },
-  cover: { height: 160, marginHorizontal: 16, borderTopLeftRadius: 16, borderTopRightRadius: 16, backgroundColor: '#D9C2FF', overflow: 'hidden', position: 'relative' },
+  cover: { height: 160, marginHorizontal: 16, borderTopLeftRadius: 16, borderTopRightRadius: 16, backgroundColor: '#E4D9C6', overflow: 'hidden', position: 'relative' },
   coverImg: { ...StyleSheet.absoluteFillObject as any },
   coverCam: { position: 'absolute', top: 10, right: 10, width: 34, height: 34, borderRadius: 17, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', zIndex: 2, elevation: 2 },
   avatarWrap: { position: 'absolute', left: 16, bottom: 8 },

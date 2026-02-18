@@ -57,11 +57,9 @@ const TagFilterSection = ({ tagData, selectedTags, onTagPress, containerStyle }:
 
 const styles = StyleSheet.create({
   container: {
-    maxHeight: 38,
+    maxHeight: 44,
     marginTop: 8,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderColor: colors.divider_light,
+    paddingBottom: 10,
   },
   scrollView: {
     flexGrow: 0,
@@ -72,24 +70,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   tagChip: {
-    height: 30,
+    height: 32,
     flexDirection: "row",
     backgroundColor: colors.tag_light,
-    paddingHorizontal: 10,
-    borderRadius: 10,
+    paddingHorizontal: 12,
+    borderRadius: 16,
     alignItems: "center",
     marginRight: 8,
+    borderWidth: 1,
+    borderColor: colors.border_gray_light,
   },
   tagChipSelected: {
-    backgroundColor: colors.tag_dark,
+    backgroundColor: colors.light_yellow,
+    borderColor: colors.primary_yellow,
   },
   tagChipText: {
     fontFamily: typography.regular,
     fontSize: 14,
-    color: colors.tag_light_text,
+    color: colors.text_gray,
   },
   tagChipTextSelected: {
-    color: colors.tag_dark_text,
+    color: colors.text_primary,
+    fontFamily: typography.medium,
   },
 });
 

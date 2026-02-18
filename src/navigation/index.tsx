@@ -89,10 +89,15 @@ const MainTabNavigator = () => (
         <View
           style={{
             flex: 1,
-            backgroundColor: colors.screen_background,
-            borderRadius: 20,
+            backgroundColor: colors.tag_light,
+            borderRadius: 24,
             borderWidth: 1,
             borderColor: colors.border_gray_light,
+            shadowColor: "#1F2A37",
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.14,
+            shadowRadius: 14,
+            elevation: 4,
           }}
         />
       ),
@@ -179,20 +184,19 @@ const AppNavigator = () => {
 
 const styles = StyleSheet.create({
   tabBar: {
-    position: 'absolute',
+    position: "absolute",
     left: 12,
     right: 12,
     bottom: 10,
     height: Platform.OS === "ios" ? 78 : 64,
     paddingBottom: Platform.OS === "ios" ? 22 : 10,
-    paddingTop: 10,
-    // Use transparent here since we draw an explicit background via tabBarBackground
-    backgroundColor: 'transparent',
-    borderTopColor: 'transparent',
+    paddingTop: 8,
+    backgroundColor: "transparent",
+    borderTopColor: "transparent",
     borderTopWidth: 0,
     elevation: 0,
-    borderRadius: 20,
-    shadowColor: '#000',
+    borderRadius: 24,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0,
     shadowRadius: 0,

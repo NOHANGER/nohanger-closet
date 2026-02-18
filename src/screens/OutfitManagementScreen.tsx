@@ -4,7 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { OutfitContext } from "../contexts/OutfitContext";
 import { colors } from "../styles/colors";
-import { typography } from "../styles/globalStyles";
+import { elevation, typography } from "../styles/globalStyles";
 import AddButton from "../components/common/AddButton";
 import OutfitThumbnail from "../components/outfit/OutfitThumbnail";
 import { OutfitStackScreenProps } from "../types/navigation";
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 8,
+    paddingBottom: 10,
   },
   title: {
     fontSize: 20,
@@ -192,36 +192,39 @@ const styles = StyleSheet.create({
     color: colors.text_primary,
   },
   segmentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     gap: 8,
-    paddingBottom: 8,
+    paddingBottom: 10,
   },
   segment: {
     height: 32,
     paddingHorizontal: 12,
     borderRadius: 16,
-    backgroundColor: '#fff',
+    backgroundColor: colors.tag_light,
     borderWidth: 1,
     borderColor: colors.border_gray_light,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   segmentActive: {
-    backgroundColor: colors.tag_dark,
-    borderColor: colors.tag_dark,
+    backgroundColor: colors.light_yellow,
+    borderColor: colors.primary_yellow,
   },
   segmentText: { fontFamily: typography.medium, fontSize: 12, color: colors.text_gray },
-  segmentTextActive: { color: colors.tag_dark_text },
+  segmentTextActive: { color: colors.text_primary },
   saveBtn: {
-    marginLeft: 'auto',
+    marginLeft: "auto",
     height: 32,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 10,
     backgroundColor: colors.accent_lime,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.border_gray,
+    ...elevation.card,
   },
   saveBtnText: { fontFamily: typography.semiBold, color: colors.text_primary },
   gridContent: {

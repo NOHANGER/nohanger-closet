@@ -17,7 +17,7 @@ import { MainTabScreenProps } from "../types/navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
 import { colors } from "../styles/colors";
-import { typography } from "../styles/globalStyles";
+import { elevation, typography } from "../styles/globalStyles";
 import PressableFade from "../components/common/PressableFade";
 import { ClothingContext } from "../contexts/ClothingContext";
 import { AuthContext } from "../contexts/AuthContext";
@@ -466,7 +466,7 @@ const WardrobeScreen = ({ navigation }: Props) => {
 
       {/* Floating Add */}
       <PressableFade style={styles.fab} onPress={handleFabPress}>
-        <MaterialIcons name="add" size={26} color="#fff" />
+        <MaterialIcons name="add" size={26} color={colors.text_primary} />
       </PressableFade>
     </SafeAreaView>
   );
@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
   },
   headerBg: {
     height: 140,
-    backgroundColor: "#D9C2FF",
+    backgroundColor: "#E4D9C6",
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
     paddingHorizontal: 16,
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     borderWidth: 3,
-    borderColor: "#fff",
+    borderColor: colors.tag_light,
   },
   headerActions: {
     flexDirection: "row",
@@ -555,11 +555,11 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: "#fff",
+    backgroundColor: colors.tag_light,
     alignItems: "center",
     justifyContent: "center",
     elevation: 2,
-    shadowColor: "#000",
+    shadowColor: "#1F2A37",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 1.5,
@@ -572,14 +572,10 @@ const styles = StyleSheet.create({
   profileCard: {
     marginTop: -28,
     marginHorizontal: 16,
-    backgroundColor: "#fff",
+    backgroundColor: colors.tag_light,
     borderRadius: 16,
     padding: 16,
-    elevation: 1,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    ...elevation.card,
   },
   nameRow: {
     fontFamily: typography.bold,
@@ -633,7 +629,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: colors.tag_light,
     borderRadius: 12,
     paddingHorizontal: 10,
     height: 40,
@@ -652,7 +648,7 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: colors.tag_light,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border_gray_light,
@@ -696,7 +692,7 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.tag_light,
     borderRadius: 12,
     padding: 6,
     height: 190,
@@ -746,7 +742,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border_gray_light,
-    backgroundColor: "#fff",
+    backgroundColor: colors.tag_light,
   },
   logoutText: {
     color: colors.primary_red,
@@ -759,14 +755,12 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     borderRadius: 29,
-    backgroundColor: "#22C7FB",
+    backgroundColor: colors.primary_yellow,
     alignItems: "center",
     justifyContent: "center",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
+    borderWidth: 1,
+    borderColor: colors.border_gray,
+    ...elevation.floating,
   },
 });
 

@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useEffect, useMemo, useState, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Crypto from "expo-crypto";
 
 export type UserProfile = {
   avatarUri?: string;
@@ -29,11 +30,21 @@ const TOKEN_KEY = "@auth_token";
 const PROFILE_KEY = "@auth_profile";
 const USERS_KEY = "@users"; // Demo user store (per device)
 
+// Basic email format validation
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 type UserRecord = {
   id: string;
   email: string;
-  password: string; // NOTE: plain text for demo only
+  passwordHash: string; // SHA-256 hash, not plain text
   profile: UserProfile;
+};
+
+// Hash a password with a fixed salt for demo purposes.
+// In production, use bcrypt with a per-user salt via a backend.
+const hashPassword = async (password: string): Promise<string> => {
+  const salted = `nohanger_demo_salt:${password}`;
+  return Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, salted);
 };
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -60,7 +71,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setProfile({ displayName: "Hey!", handle: "@you" });
         }
       } catch (e) {
-        console.error("Auth load error", e);
+        if (__DEV__) console.error("Auth load error", e);
       } finally {
         setIsLoading(false);
       }
@@ -68,15 +79,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    // Demo login using local AsyncStorage user store
     const e = email.trim().toLowerCase();
     if (!e || !password) throw new Error("Email and password are required");
+    if (!EMAIL_REGEX.test(e)) throw new Error("Please enter a valid email address");
     const record = users[e];
-    if (!record) throw new Error("No account found. Please sign up.");
-    if (record.password !== password) throw new Error("Invalid password");
+    // Use generic error to avoid account enumeration
+    if (!record) throw new Error("Invalid email or password");
+    const candidateHash = await hashPassword(password);
+    // Support legacy plain-text records (migration path)
+    const storedValue = record.passwordHash ?? (record as any).password;
+    const isPlainText = !record.passwordHash && (record as any).password;
+    if (isPlainText) {
+      if (storedValue !== password) throw new Error("Invalid email or password");
+    } else {
+      if (storedValue !== candidateHash) throw new Error("Invalid email or password");
+    }
 
     // Set token + profile
-    const token = `demo.${Date.now()}`;
+    const token = Crypto.randomUUID();
     await AsyncStorage.setItem(TOKEN_KEY, token);
     await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(record.profile));
     setProfile(record.profile);
@@ -91,17 +111,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const updateProfile = useCallback(async (patch: Partial<UserProfile>) => {
     setProfile((prev) => {
-      const next = { ...(prev || {}), ...patch } as UserProfile;
-      AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(next)).catch(() => {});
-      // Also update current user record if logged in
-      (async () => {
-        try {
-          const token = await AsyncStorage.getItem(TOKEN_KEY);
-          if (!token) return; // not logged in
-          // find user by matching email in profile (demo uses handle/displayName; store by email in users map)
-          // In this demo, we cannot infer email from token; skip updating users map here.
-        } catch {}
-      })();
+      const next = { ...(prev ?? {}), ...patch } as UserProfile;
+      AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(next)).catch((e) => {
+        if (__DEV__) console.error("Failed to persist profile update:", e);
+      });
       return next;
     });
   }, []);
@@ -110,12 +123,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     async (email: string, password: string, p?: Partial<UserProfile>) => {
       const e = email.trim().toLowerCase();
       if (!e || !password) throw new Error("Email and password are required");
+      if (!EMAIL_REGEX.test(e)) throw new Error("Please enter a valid email address");
+      if (password.length < 6) throw new Error("Password must be at least 6 characters");
       if (users[e]) throw new Error("An account with this email already exists");
 
+      const passwordHash = await hashPassword(password);
+
       const record: UserRecord = {
-        id: `user_${Date.now()}`,
+        id: Crypto.randomUUID(),
         email: e,
-        password, // DEMO ONLY
+        passwordHash,
         profile: {
           displayName: p?.displayName || "Hey!",
           handle: p?.handle || `@${e.split("@")[0]}`,
@@ -128,7 +145,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await AsyncStorage.setItem(USERS_KEY, JSON.stringify(nextUsers));
 
       // Auto-login after signup
-      const token = `demo.${Date.now()}`;
+      const token = Crypto.randomUUID();
       await AsyncStorage.setItem(TOKEN_KEY, token);
       await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(record.profile));
       setProfile(record.profile);
